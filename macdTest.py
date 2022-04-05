@@ -27,5 +27,5 @@ for i in range(2, len(df)):
  
 idk = df.iloc[Buy].index
 
-# for dateTime in idk:
-#     print(dateTime, end="\n")
+for dateTime in idk:
+    print(dateTime, end="\n")

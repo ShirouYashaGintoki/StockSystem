@@ -1,10 +1,8 @@
 import requests
 import sqlite3 as db
 import time
-import json
 import pandas as pd
-
-indices = []
+from pandas import json_normalize
 
 url = "https://twelve-data1.p.rapidapi.com/time_series"
 
@@ -36,6 +34,8 @@ for ticker in tickers:
         querystring = {"symbol":ticker,"interval":"1h","outputsize":"1","format":"json"}
         response = requests.request("GET", url, headers=headers, params=querystring)
         jsonResponse = response.json()
+        df2 = json_normalize(jsonResponse, 'values')
+        print(df2)
         if jsonResponse["status"] == "error":
             fails.append(jsonResponse["meta"]["symbol"])
         else:
