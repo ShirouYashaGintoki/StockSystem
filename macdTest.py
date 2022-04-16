@@ -1,7 +1,7 @@
 import yfinance as yf
 import matplotlib.pyplot as plt
 
-df = yf.download('AMZN', start='2021-01-06')
+df = yf.download('AMZN', start='2022-01-19')
 
 df['EMA12'] = df.Close.ewm(span=12).mean()
 df['EMA26'] = df.Close.ewm(span=26).mean()
@@ -14,7 +14,7 @@ print('indicators added')
 # plt.legend()
 # plt.show()
 
-# print(df)
+print(df)
 
 Buy, Sell = [], []
 
@@ -26,6 +26,11 @@ for i in range(2, len(df)):
 
  
 idk = df.iloc[Buy].index
+print(idk)
 
 for dateTime in idk:
-    print(dateTime, end="\n")
+    print("Buy", dateTime, end="\n")
+
+poo = df.iloc[Sell].index
+for dateTime in poo:
+    print("Sell", dateTime, end="\n")
