@@ -42,10 +42,11 @@ for ticker in tickers:
         # Sleep for a minute
         time.sleep(60)
     try:
-        querystring = {"symbol":ticker,"interval":"1h","outputsize":"80","format":"json"}
+        querystring = {"symbol":ticker,"interval":"1day","outputsize":"80","format":"json"}
         response = requests.request("GET", url, headers=headers, params=querystring)
         jsonResponse = response.json()
         df2 = json_normalize(jsonResponse, 'values')
+        print(tabulate(df2, showindex=False, headers=list(df2.columns)))
         df2.drop(['open', 'high', 'low', 'volume'], axis=1, inplace=True)
         df2.set_index('datetime', inplace=True)
         df2['EMA12'] = df2.close.ewm(span=12).mean()

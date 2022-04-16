@@ -11,15 +11,15 @@ dataFrames = []
 Buy, Sell = [], []
 
 # URL for API
-url = "https://twelve-data1.p.rapidapi.com/time_series"
+url = "https://alpha-vantage.p.rapidapi.com/query"
 
 # querystring = {"symbol":"ALV.DE","interval":"1h","outputsize":"1","format":"json"}
 
 # Headers for API
 headers = {
-    'x-rapidapi-host': "twelve-data1.p.rapidapi.com",
-    'x-rapidapi-key': "d9d76c3270msh16a19417bd4b485p1b0395jsn955227be6f56"
-    }
+	"X-RapidAPI-Host": "alpha-vantage.p.rapidapi.com",
+	"X-RapidAPI-Key": "d9d76c3270msh16a19417bd4b485p1b0395jsn955227be6f56"
+}
 
 # Indices as dataframe, Sheet 1 is main sheet, Sheet 2 has 5 for testing
 indices = pd.read_excel('tickers2.xlsx', sheet_name='Sheet 3')
@@ -42,21 +42,21 @@ for ticker in tickers:
         # Sleep for a minute
         time.sleep(60)
     try:
-        querystring = {"symbol":ticker,"interval":"1h","outputsize":"80","format":"json"}
+        querystring = {"function":"TIME_SERIES_DAILY","symbol":"AMZN","outputsize":"compact","datatype":"json"}
         response = requests.request("GET", url, headers=headers, params=querystring)
         jsonResponse = response.json()
-        df2 = json_normalize(jsonResponse, 'values')
-        df2.drop(['open', 'high', 'low', 'volume'], axis=1, inplace=True)
-        df2.set_index('datetime', inplace=True)
-        df2['EMA12'] = df2.close.ewm(span=12).mean()
-        df2['EMA26'] = df2.close.ewm(span=26).mean()
-        df2['MACD'] = df2.EMA12 - df2.EMA26
-        df2['signal'] = df2.MACD.ewm(span=9).mean()
-        print(tabulate(df2, showindex=False, headers=list(df2.columns)))
-        plt.plot(df2.signal, label='Signal Line', color='red')
-        plt.plot(df2.MACD, label='MACD', color='green')
-        plt.legend()
-        plt.show()
+        print(jsonResponse["Time Series (Daily)"])
+        # df2.drop(['open', 'high', 'low', 'volume'], axis=1, inplace=True)
+        # df2.set_index('datetime', inplace=True)
+        # df2['EMA12'] = df2.close.ewm(span=12).mean()
+        # df2['EMA26'] = df2.close.ewm(span=26).mean()
+        # df2['MACD'] = df2.EMA12 - df2.EMA26
+        # df2['signal'] = df2.MACD.ewm(span=9).mean()
+        # print(tabulate(df2, showindex=False, headers=list(df2.columns)))
+        # plt.plot(df2.signal, label='Signal Line', color='red')
+        # plt.plot(df2.MACD, label='MACD', color='green')
+        # plt.legend()
+        # plt.show()
         # print(df2.to_markdown())
         # df2.head()
         # print(df2)
@@ -64,20 +64,20 @@ for ticker in tickers:
     except Exception as e:
         print(ticker + " " + str(e))
 
-print(df2.index)
+# print(df2.index)
 
-for i in range(1, len(df2)):
-    if df2.MACD.iloc[i] > df2.signal.iloc[i] and df2.MACD.iloc[i-1] < df2.signal.iloc[i-1]:
-        Buy.append(i)
-    elif df2.MACD.iloc[i] < df2.signal.iloc[i] and df2.MACD.iloc[i-1] > df2.signal.iloc[i-1]:
-        Sell.append(i)
+# for i in range(1, len(df2)):
+#     if df2.MACD.iloc[i] > df2.signal.iloc[i] and df2.MACD.iloc[i-1] < df2.signal.iloc[i-1]:
+#         Buy.append(i)
+#     elif df2.MACD.iloc[i] < df2.signal.iloc[i] and df2.MACD.iloc[i-1] > df2.signal.iloc[i-1]:
+#         Sell.append(i)
 
-print(Buy)
+# print(Buy)
 
-idk = df2.iloc[Buy].index
+# idk = df2.iloc[Buy].index
 
-for dateTime in idk:
-    print(dateTime, end="\n")
+# for dateTime in idk:
+#     print(dateTime, end="\n")
 
 # # Date format is YYYY-MM-DD
 # for indexer in Buy:
