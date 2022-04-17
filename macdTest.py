@@ -14,6 +14,7 @@ print('indicators added')
 # plt.legend()
 # plt.show()
 
+print("before \n-------------")
 print(df)
 
 Buy, Sell = [], []
@@ -26,11 +27,17 @@ for i in range(2, len(df)):
 
  
 idk = df.iloc[Buy].index
-print(idk)
 
-for dateTime in idk:
-    print("Buy", dateTime, end="\n")
+df = df.iloc[::-1]
 
-poo = df.iloc[Sell].index
-for dateTime in poo:
-    print("Sell", dateTime, end="\n")
+print("after \n-------------")
+print(df)
+print(df.iloc[0])
+# print(idk)
+
+# for dateTime in idk:
+#     print("Buy", dateTime, end="\n")
+
+# poo = df.iloc[Sell].index
+# for dateTime in poo:
+#     print("Sell", dateTime, end="\n")
