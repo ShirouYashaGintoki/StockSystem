@@ -5,6 +5,7 @@ import time
 import pandas as pd
 from pandas import json_normalize
 from tabulate import tabulate
+from tkinter import *
 
 # List of dataframes for each stock
 dataFrames = []
