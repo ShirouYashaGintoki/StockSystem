@@ -9,6 +9,7 @@ indices = pd.read_excel('tickers2.xlsx', sheet_name='Sheet 1')
 tickers = sorted(indices['Symbol'])
 
 print(tickers)
+setTickers = ['', '', '', '', '']
 
 root = Tk()
 root.title("Simple Stock Signal System")
@@ -18,9 +19,13 @@ root.resizable(False, False)
 clicked1 = StringVar(root)
 
 def callback(*args):
+     if setTickers.count(clicked1.get()) >= 1:
+          print(f'The variable {clicked1.get()} already exists')
+     
      print(f"the variable has changed to '{clicked1.get()}'")
 
 clicked1.set(tickers[0])
+print(setTickers)
 clicked1.trace("w", callback)
 
 
