@@ -1,9 +1,14 @@
 from tkinter import *
+import pandas as pd
 
-from matplotlib.pyplot import get
+# Indices as dataframe, Sheet 1 is main sheet, Sheet 2 has 5 for testing
+indices = pd.read_excel('tickers2.xlsx', sheet_name='Sheet 1')
 
-listOfIndices = ["AMZN", "PLOP", "TURD"]
+# Tickers is a list of symbols as strings from the 'Symbol' column
+# of the dataframe 'indices'
+tickers = sorted(indices['Symbol'])
 
+print(tickers)
 
 root = Tk()
 root.title("Simple Stock Signal System")
@@ -11,39 +16,34 @@ root.geometry("750x720")
 root.resizable(False, False)
 
 clicked1 = StringVar(root)
-clicked1.set(listOfIndices[0])
+
+def callback(*args):
+     print(f"the variable has changed to '{clicked1.get()}'")
+
+clicked1.set(tickers[0])
+clicked1.trace("w", callback)
+
 
 clicked2 = StringVar(root)
-clicked2.set(listOfIndices[0])
+clicked2.set(tickers[0])
 
 clicked3 = StringVar(root)
-clicked3.set(listOfIndices[0])
+clicked3.set(tickers[0])
 
 clicked4 = StringVar(root)
-clicked4.set(listOfIndices[0])
+clicked4.set(tickers[0])
 
 clicked5 = StringVar(root)
-clicked5.set(listOfIndices[0])
+clicked5.set(tickers[0])
 
 
-def beans():
-    print("Beans alert")
+drop1 = OptionMenu(root, clicked1, *tickers)
+drop1.config(width=20, bg="green", foreground="white")
+drop1.grid(row=0, column=0)
 
-mB = Menubutton(root, text="Test menu button")
-
-testMenu = Menu(mB, tearoff=0)
-testMenu.add_command(label="poo", command=beans)
-mB['menu'] = Menu
-
-mB.place(x=50, y=50)
-
-# drop1 = OptionMenu(root, clicked1, *listOfIndices)
-# drop1.config(width=20, bg="green", foreground="white")
-# drop1.grid(row=0, column=0)
-
-# button1 = Button(root, text="Get chart")
-# button1.columnconfigure(0, weight=0)
-# button1.grid(row=1, column=0, sticky=W)
+button1 = Button(root, text="Get chart")
+button1.columnconfigure(0, weight=0)
+button1.grid(row=1, column=0, sticky=W)
 
 # drop2 = OptionMenu(root, clicked2, *listOfIndices)
 # drop2.config(width=20, bg="green", foreground="white")

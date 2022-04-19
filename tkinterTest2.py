@@ -11,18 +11,20 @@ class Window:
         self.mbutton = tk.Menubutton(self.frame, text="Stonks", relief=tk.RAISED)
 
         self.menu = tk.Menu(self.mbutton, tearoff=0)
-        self.var1 = tk.IntVar()
+        self.var1 = tk.StringVar()
         self.var2 = tk.IntVar()
         self.menu.add_checkbutton(label="Option 1", variable=self.var1, command=self.command1)
-        self.menu.add_checkbutton(label="Option 1", variable=self.var2, command=self.command1)
+        self.menu.add_checkbutton(label="Option2", variable=self.var2, command=self.command1)
+        self.menu.add_radiobutton(label="Radio")
+        self.menu.add_radiobutton(label="Radio2")
+        self.menu.add_radiobutton(label="Radio3", command=self.command1)
         self.mbutton['menu'] = self.menu
 
         self.mbutton.place(x=50, y=50)
 
 
     def command1(self):
-        print(self.var1.get())
-        print(self.var2.get())
+        self.mbutton = tk.Menubutton(self.frame, text=)
 
 
 root = tk.Tk()
