@@ -29,6 +29,7 @@ clicked3   = StringVar(root)
 clicked4   = StringVar(root)
 clicked5   = StringVar(root)
 timeFrame1 = StringVar(root)
+timeFrame2 = StringVar(root)
 
 def callback1(*args):
      pass
