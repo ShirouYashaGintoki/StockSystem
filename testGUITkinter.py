@@ -9,8 +9,23 @@ indices = pd.read_excel('tickers2.xlsx', sheet_name='Sheet 1')
 tickers = sorted(indices['Symbol'])
 timeFrames = ['HOURLY', 'DAILY', 'WEEKLY']
 
-setTickers = ['', '', '', '', '']
 stockRotations = [
+     ['', ''],
+     ['', ''],
+     ['', ''],
+     ['', ''],
+     ['', '']
+]
+
+timeRotations = [
+     ['', ''],
+     ['', ''],
+     ['', ''],
+     ['', ''],
+     ['', '']
+]
+
+stockTimeCombo = [
      ['', ''],
      ['', ''],
      ['', ''],
@@ -32,23 +47,59 @@ timeFrame1 = StringVar(root)
 timeFrame2 = StringVar(root)
 
 def callback1(*args):
-     pass
+     # When dropdown is changed, check if its combo exists
+     print(clicked1.get(), timeFrame1.get())
+     if [clicked1.get(), timeFrame1.get()] in stockTimeCombo:
+          print("Duplicate combo detected")
+          if stockRotations[0][1] == '':
+               clicked1.set(stockRotations[0][0])
+          else:
+               clicked1.set(stockRotations[0][1])
+     else:
+          # If combo does not exist, allow change and move stock pointers
+          # Check if there is already a pointer in stock rotation
+          if stockRotations[0][1] == '':
+               stockRotations[0][1] = clicked1.get()
+               stockTimeCombo[0][0] = clicked1.get()
+          else:
+               print("Stock rotation: " + stockRotations[0][1])
+               stockRotations[0][0] = stockRotations[0][1]
+               stockRotations[0][1] = clicked1.get()
+               stockTimeCombo[0][0] = clicked1.get()
+          print(f'drop variable has been changed to {clicked1.get()}')
+          print([clicked1.get(), timeFrame1.get()])
+          print(stockRotations[0])
+          print(stockTimeCombo)
 
+# Stock 1
+#####################################
 clicked1.set(tickers[0])
-setTickers[0] = clicked1.get()
-stockRotations[0][0] = clicked1.get()
-clicked1.trace("w", callback1)
 timeFrame1.set(timeFrames[0])
+stockRotations[0][0] = clicked1.get()
+timeRotations[0][0] = timeFrame1.get()
+stockTimeCombo[0][0] = clicked1.get()
+stockTimeCombo[0][1] = timeFrame1.get()
+clicked1.trace("w", callback1)
 
+#####################################
+
+# Stock 2
+#####################################
 clicked2.set(tickers[1])
-setTickers[1] = clicked2.get()
+timeFrame2.set(timeFrames[0])
 stockRotations[1][0] = clicked2.get()
-print(setTickers)
+timeRotations[1][0] = timeFrame2.get()
+stockTimeCombo[1][0] = clicked2.get()
+stockTimeCombo[1][1] = timeFrame2.get()
 # clicked2.trace("w", callback1)
+#####################################
+
 clicked3.set(tickers[2])
 clicked4.set(tickers[3])
 clicked5.set(tickers[4])
 
+print(stockRotations)
+print(stockTimeCombo)
 
 drop1 = OptionMenu(root, clicked1, *tickers)
 drop1.config(width=22, bg="green", foreground="white")
@@ -68,7 +119,11 @@ drop2.place(x=0, y=80)
 
 button2 = Button(root, text="Get chart")
 button2.columnconfigure(0, weight=0)
-button2.place(x=0, y=110)
+button2.place(x=0, y=115)
+
+dropTf2 = OptionMenu(root, timeFrame2, *timeFrames)
+dropTf2.config(width=10, bg="blue", foreground="white")
+dropTf2.place(x=72, y=112)
 
 # drop3 = OptionMenu(root, clicked3, *listOfIndices)
 # drop3.config(width=20, bg="green", foreground="white")
