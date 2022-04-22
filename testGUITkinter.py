@@ -1,6 +1,5 @@
 from tkinter import *
 import pandas as pd
-from varname import nameof, argname, varname
 
 # Indices as dataframe, Sheet 1 is main sheet, Sheet 2 has 5 for testing
 indices = pd.read_excel('tickers2.xlsx', sheet_name='Sheet 1')
@@ -24,36 +23,14 @@ srtCombo = {
      "clicked5" : ['', '', '', '', '', '']
 }
 
-# stockRotations = [
-#      ['', ''],
-#      ['', ''],
-#      ['', ''],
-#      ['', ''],
-#      ['', '']
-# ]
-
-# timeRotations = [
-#      ['', ''],
-#      ['', ''],
-#      ['', ''],
-#      ['', ''],
-#      ['', '']
-# ]
-
-# stockTimeCombo = [
-#      ['', ''],
-#      ['', ''],
-#      ['', ''],
-#      ['', ''],
-#      ['', '']
-# ]
-
+# Establish Tkinter frame as root, set geometry
 root = Tk()
 root.title("Simple Stock Signal System")
-root.geometry("750x720")
+root.geometry("650x600")
 root.resizable(False, False)
 
-clicked1   = StringVar(root, name="beans")
+# Initialize variables for dropdown boxes
+clicked1   = StringVar(root)
 clicked2   = StringVar(root)
 clicked3   = StringVar(root)
 clicked4   = StringVar(root)
@@ -61,6 +38,11 @@ clicked5   = StringVar(root)
 timeFrame1 = StringVar(root)
 timeFrame2 = StringVar(root)
 
+# Define callback function
+# Args
+# clicker = The StringVar associated with the stock dropdown box
+# timeframe = The StringVar associated with the timeframe dropdown box
+# clickername = The name identifying the dropdown box being changed
 def callback1(clicker, timeframe, clickerName):
      # When dropdown is changed, check if its combo exists
      print(clicker.get(), timeframe.get())
@@ -138,6 +120,10 @@ button2.place(x=0, y=115)
 dropTf2 = OptionMenu(root, timeFrame2, *timeFrames)
 dropTf2.config(width=10, bg="blue", foreground="white")
 dropTf2.place(x=72, y=112)
+
+exitButton = Button(root, text="Exit", command=root.destroy)
+exitButton.config(width=10, bg="red", foreground="white")
+exitButton.place(x=560, y=570)
 
 # drop3 = OptionMenu(root, clicked3, *listOfIndices)
 # drop3.config(width=20, bg="green", foreground="white")
