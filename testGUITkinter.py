@@ -1,6 +1,6 @@
 from tkinter import *
 import pandas as pd
-from varname import nameof
+from varname import nameof, argname, varname
 
 # Indices as dataframe, Sheet 1 is main sheet, Sheet 2 has 5 for testing
 indices = pd.read_excel('tickers2.xlsx', sheet_name='Sheet 1')
@@ -12,29 +12,41 @@ tickers = sorted(indices['Symbol'])
 timeFrames = ['HOURLY', 'DAILY', 'WEEKLY']
 
 # Create list to handle previous selection of stock
-stockRotations = [
-     ['', ''],
-     ['', ''],
-     ['', ''],
-     ['', ''],
-     ['', '']
-]
 
-timeRotations = [
-     ['', ''],
-     ['', ''],
-     ['', ''],
-     ['', ''],
-     ['', '']
-]
+# Indexes 0 for last, 1 for new stock rotation
+# Indexes 2 for last, 3 for new time rotation
+# Indexes 4, 5 to store the stock time combination
+srtCombo = {
+     "clicked1" : ['', '', '', '', '', ''],
+     "clicked2" : ['', '', '', '', '', ''],
+     "clicked3" : ['', '', '', '', '', ''],
+     "clicked4" : ['', '', '', '', '', ''],
+     "clicked5" : ['', '', '', '', '', '']
+}
 
-stockTimeCombo = [
-     ['', ''],
-     ['', ''],
-     ['', ''],
-     ['', ''],
-     ['', '']
-]
+# stockRotations = [
+#      ['', ''],
+#      ['', ''],
+#      ['', ''],
+#      ['', ''],
+#      ['', '']
+# ]
+
+# timeRotations = [
+#      ['', ''],
+#      ['', ''],
+#      ['', ''],
+#      ['', ''],
+#      ['', '']
+# ]
+
+# stockTimeCombo = [
+#      ['', ''],
+#      ['', ''],
+#      ['', ''],
+#      ['', ''],
+#      ['', '']
+# ]
 
 root = Tk()
 root.title("Simple Stock Signal System")
@@ -49,65 +61,42 @@ clicked5   = StringVar(root)
 timeFrame1 = StringVar(root)
 timeFrame2 = StringVar(root)
 
-# def resetOptionMenus():
-#      newList = tickers.copy()
-#      newList.remove(clicked1.get())
-#      print(type(newList))
-#      print(clicked2.get())
-#      drop2 = OptionMenu(root, clicked2, *newList)
-#      drop2.config(width=20, bg="green", foreground="white")
-#      drop2.place(x=0, y=80)
-
-def callback1(clicker):
+def callback1(clicker, timeframe, clickerName):
      # When dropdown is changed, check if its combo exists
-     print(clicker.get(), timeFrame1.get())
-     if [clicker.get(), timeFrame1.get()] in stockTimeCombo:
-          print("Duplicate combo detected")
-          if stockRotations[0][1] == '':
-               clicker.set(stockRotations[0][0])
-          else:
-               clicker.set(stockRotations[0][1])
+     print(clicker.get(), timeframe.get())
+     # clickerName = argname(clicker)
+     for keyName in srtCombo:
+          print(srtCombo[keyName])
+          print(clickerName, keyName)
+          print(f'{clicker.get()}, {timeframe.get()} vs {srtCombo[keyName][4]}, {srtCombo[keyName][5]}')
+          if [clicker.get(), timeframe.get()] == [srtCombo[keyName][4], srtCombo[keyName][5]]:
+               print(f'A duplicate has been found!')
+               if srtCombo[clickerName][1] == '':
+                    clicker.set(srtCombo[clickerName][0])
+               else:
+                    clicker.set(srtCombo[clickerName][1])
+               break
      else:
           # If combo does not exist, allow change and move stock pointers
           # Check if there is already a pointer in stock rotation
-          # clickerName = [ k for k,v in locals().items() if v == clicker][0]
-          # clicked1Name = [ k for k,v in locals().items() if v == clicked1][0]
-
-          if clicker == clicked1:
-               if stockRotations[0][1] == '':
-                    stockRotations[0][1] = clicker.get()
-                    stockTimeCombo[0][0] = clicker.get()
-               else:
-                    print("Stock rotation: " + stockRotations[0][1])
-                    stockRotations[0][0] = stockRotations[0][1]
-                    stockRotations[0][1] = clicker.get()
-                    stockTimeCombo[0][0] = clicker.get()
-          if clicker == clicked2:
-               if stockRotations[1][1] == '':
-                    stockRotations[1][1] = clicker.get()
-                    stockTimeCombo[1][0] = clicker.get()
-               else:
-                    print("Stock rotation: " + stockRotations[1][1])
-                    stockRotations[1][0] = stockRotations[1][1]
-                    stockRotations[1][1] = clicker.get()
-                    stockTimeCombo[1][0] = clicker.get()
+          if srtCombo[clickerName][1] == '':
+               srtCombo[clickerName][1] = clicker.get()
+          else:
+               srtCombo[clickerName][0] = srtCombo[clickerName][1]
+               srtCombo[clickerName][1] = clicker.get()
           print(f'drop variable has been changed to {clicker.get()}')
-          print([clicker.get(), timeFrame1.get()])
-          print(stockRotations[0])
-          print(stockTimeCombo)
-          # resetOptionMenus()
+          print([clicker.get(), timeframe.get()])
           
 
 # Stock 1
 #####################################
 clicked1.set(tickers[0])
 timeFrame1.set(timeFrames[0])
-stockRotations[0][0] = clicked1.get()
-timeRotations[0][0] = timeFrame1.get()
-stockTimeCombo[0][0] = clicked1.get()
-stockTimeCombo[0][1] = timeFrame1.get()
-clicked1.trace_add("write", lambda var_name, var_index, operation: callback1(clicked1))
-print(clicked1.trace_info())
+srtCombo["clicked1"][0] = clicked1.get()
+srtCombo["clicked1"][2] = timeFrame1.get()
+srtCombo["clicked1"][4] = clicked1.get()
+srtCombo["clicked1"][5] = timeFrame1.get()
+clicked1.trace_add("write", lambda var_name, var_index, operation: callback1(clicked1, timeFrame1, "clicked1"))
 
 #####################################
 
@@ -115,19 +104,16 @@ print(clicked1.trace_info())
 #####################################
 clicked2.set(tickers[1])
 timeFrame2.set(timeFrames[0])
-stockRotations[1][0] = clicked2.get()
-timeRotations[1][0] = timeFrame2.get()
-stockTimeCombo[1][0] = clicked2.get()
-stockTimeCombo[1][1] = timeFrame2.get()
+srtCombo["clicked2"][0] = clicked2.get()
+srtCombo["clicked2"][2] = timeFrame2.get()
+srtCombo["clicked2"][4] = clicked2.get()
+srtCombo["clicked2"][5] = timeFrame2.get()
 # clicked2.trace("w", callback1)
 #####################################
 
 clicked3.set(tickers[2])
 clicked4.set(tickers[3])
 clicked5.set(tickers[4])
-
-print(stockRotations)
-print(stockTimeCombo)
 
 drop1 = OptionMenu(root, clicked1, *tickers)
 drop1.config(width=22, bg="green", foreground="white")
