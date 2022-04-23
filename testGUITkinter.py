@@ -37,6 +37,9 @@ clicked4   = StringVar(root)
 clicked5   = StringVar(root)
 timeFrame1 = StringVar(root)
 timeFrame2 = StringVar(root)
+timeFrame3 = StringVar(root)
+timeFrame4 = StringVar(root)
+timeFrame5 = StringVar(root)
 
 # Define callback function
 # Args
@@ -68,7 +71,32 @@ def callback1(clicker, timeframe, clickerName):
                srtCombo[clickerName][1] = clicker.get()
           print(f'drop variable has been changed to {clicker.get()}')
           print([clicker.get(), timeframe.get()])
-          
+
+def callback2(clicker, timeframe, clickerName):
+     # When dropdown is changed, check if its combo exists
+     print(clicker.get(), timeframe.get())
+     # clickerName = argname(clicker)
+     for keyName in srtCombo:
+          print(srtCombo[keyName])
+          print(clickerName, keyName)
+          print(f'{clicker.get()}, {timeframe.get()} vs {srtCombo[keyName][4]}, {srtCombo[keyName][5]}')
+          if [clicker.get(), timeframe.get()] == [srtCombo[keyName][4], srtCombo[keyName][5]]:
+               print(f'A duplicate time has been found!')
+               if srtCombo[clickerName][3] == '':
+                    timeFrame1.set(srtCombo[clickerName][2])
+               else:
+                    timeFrame1.set(srtCombo[clickerName][3])
+               break
+     else:
+          # If combo does not exist, allow change and move stock pointers
+          # Check if there is already a pointer in stock rotation
+          if srtCombo[clickerName][3] == '':
+               srtCombo[clickerName][3] = timeFrame1.get()
+          else:
+               srtCombo[clickerName][2] = srtCombo[clickerName][3]
+               srtCombo[clickerName][3] = timeFrame1.get()
+          print(f'drop variable has been changed to {clicker.get()}')
+          print([clicker.get(), timeframe.get()])
 
 # Stock 1
 #####################################
@@ -79,6 +107,7 @@ srtCombo["clicked1"][2] = timeFrame1.get()
 srtCombo["clicked1"][4] = clicked1.get()
 srtCombo["clicked1"][5] = timeFrame1.get()
 clicked1.trace_add("write", lambda var_name, var_index, operation: callback1(clicked1, timeFrame1, "clicked1"))
+timeFrame1.trace_add("write", lambda var_name, var_index, operation: callback2(clicked1, timeFrame1, "clicked1"))
 
 #####################################
 
@@ -90,12 +119,46 @@ srtCombo["clicked2"][0] = clicked2.get()
 srtCombo["clicked2"][2] = timeFrame2.get()
 srtCombo["clicked2"][4] = clicked2.get()
 srtCombo["clicked2"][5] = timeFrame2.get()
-# clicked2.trace("w", callback1)
+clicked2.trace_add("write", lambda var_name, var_index, operation: callback1(clicked2, timeFrame2, "clicked2"))
+timeFrame2.trace_add("write", lambda var_name, var_index, operation: callback2(clicked2, timeFrame2, "clicked2"))
 #####################################
 
+# Stock 3
+#####################################
 clicked3.set(tickers[2])
+timeFrame3.set(timeFrames[0])
+srtCombo["clicked3"][0] = clicked3.get()
+srtCombo["clicked3"][2] = timeFrame3.get()
+srtCombo["clicked3"][4] = clicked3.get()
+srtCombo["clicked3"][5] = timeFrame3.get()
+clicked3.trace_add("write", lambda var_name, var_index, operation: callback1(clicked3, timeFrame3, "clicked3"))
+timeFrame3.trace_add("write", lambda var_name, var_index, operation: callback2(clicked3, timeFrame3, "clicked3"))
+#####################################
+
+# Stock 4
+#####################################
 clicked4.set(tickers[3])
+timeFrame4.set(timeFrames[0])
+srtCombo["clicked4"][0] = clicked4.get()
+srtCombo["clicked4"][2] = timeFrame4.get()
+srtCombo["clicked4"][4] = clicked4.get()
+srtCombo["clicked4"][5] = timeFrame4.get()
+clicked4.trace_add("write", lambda var_name, var_index, operation: callback1(clicked4, timeFrame4, "clicked4"))
+timeFrame4.trace_add("write", lambda var_name, var_index, operation: callback2(clicked4, timeFrame4, "clicked4"))
+#####################################
+
+
+# Stock 5
+#####################################
 clicked5.set(tickers[4])
+timeFrame5.set(timeFrames[0])
+srtCombo["clicked5"][0] = clicked5.get()
+srtCombo["clicked5"][2] = timeFrame5.get()
+srtCombo["clicked5"][4] = clicked5.get()
+srtCombo["clicked5"][5] = timeFrame5.get()
+clicked5.trace_add("write", lambda var_name, var_index, operation: callback1(clicked5, timeFrame5, "clicked5"))
+timeFrame5.trace_add("write", lambda var_name, var_index, operation: callback2(clicked5, timeFrame5, "clicked5"))
+#####################################
 
 drop1 = OptionMenu(root, clicked1, *tickers)
 drop1.config(width=22, bg="green", foreground="white")
@@ -109,8 +172,10 @@ dropTf1 = OptionMenu(root, timeFrame1, *timeFrames)
 dropTf1.config(width=10, bg="blue", foreground="white")
 dropTf1.place(x=72, y=32)
 
+########################################################
+
 drop2 = OptionMenu(root, clicked2, *tickers)
-drop2.config(width=20, bg="green", foreground="white")
+drop2.config(width=22, bg="green", foreground="white")
 drop2.place(x=0, y=80)
 
 button2 = Button(root, text="Get chart")
@@ -121,38 +186,54 @@ dropTf2 = OptionMenu(root, timeFrame2, *timeFrames)
 dropTf2.config(width=10, bg="blue", foreground="white")
 dropTf2.place(x=72, y=112)
 
+########################################################
+
+drop3 = OptionMenu(root, clicked3, *tickers)
+drop3.config(width=22, bg="green", foreground="white")
+drop3.place(x=0, y=160)
+
+button3 = Button(root, text="Get chart")
+button3.columnconfigure(0, weight=0)
+button3.place(x=0, y=195)
+
+dropTf3 = OptionMenu(root, timeFrame3, *timeFrames)
+dropTf3.config(width=10, bg="blue", foreground="white")
+dropTf3.place(x=72, y=192)
+
+########################################################
+
+drop4 = OptionMenu(root, clicked4, *tickers)
+drop4.config(width=22, bg="green", foreground="white")
+drop4.place(x=0, y=240)
+
+button4 = Button(root, text="Get chart")
+button4.columnconfigure(0, weight=0)
+button4.place(x=0, y=275)
+
+dropTf4 = OptionMenu(root, timeFrame4, *timeFrames)
+dropTf4.config(width=10, bg="blue", foreground="white")
+dropTf4.place(x=72, y=272)
+
+# ########################################################
+
+drop5 = OptionMenu(root, clicked5, *tickers)
+drop5.config(width=22, bg="green", foreground="white")
+drop5.place(x=0, y=320)
+
+button5 = Button(root, text="Get chart")
+button5.columnconfigure(0, weight=0)
+button5.place(x=0, y=355)
+
+dropTf5 = OptionMenu(root, timeFrame5, *timeFrames)
+dropTf5.config(width=10, bg="blue", foreground="white")
+dropTf5.place(x=72, y=352)
+
+########################################################
+
 exitButton = Button(root, text="Exit", command=root.destroy)
 exitButton.config(width=10, bg="red", foreground="white")
 exitButton.place(x=560, y=570)
 
-# drop3 = OptionMenu(root, clicked3, *listOfIndices)
-# drop3.config(width=20, bg="green", foreground="white")
-# drop3.grid(row=4, column=0)
-# button3 = Button(root, text="Get chart")
-# button3.columnconfigure(0, weight=0)
-# button3.grid(row=5, column=0, sticky=W)
-
-# drop4 = OptionMenu(root, clicked4, *listOfIndices)
-# drop4.config(width=20, bg="green", foreground="white")
-# drop4.grid(row=6, column=0)
-# button4 = Button(root, text="Get chart")
-# button4.columnconfigure(0, weight=0)
-# button4.grid(row=7, column=0, sticky=W)
-
-# drop5 = OptionMenu(root, clicked5, *listOfIndices)
-# drop5.config(width=20, bg="green", foreground="white")
-# drop5.grid(row=8, column=0)
-# button5 = Button(root, text="Get chart")
-# button5.columnconfigure(0, weight=0)
-# button5.grid(row=9, column=0, sticky=W)
-
-
-
-# exitButton = Button(root, text="Exit", command=root.destroy)
-# exitButton.config(width=10, bg="red", foreground="white")
-# exitButton.columnconfigure(0, weight=0)
-# exitButton.grid(row=10, column=10, sticky=S+E)
-# drop.pack()
-
+########################################################
 
 mainloop()
