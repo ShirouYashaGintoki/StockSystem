@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import messagebox
 import pandas as pd
 
 # Indices as dataframe, Sheet 1 is main sheet, Sheet 2 has 5 for testing
@@ -48,19 +49,23 @@ timeFrame5 = StringVar(root)
 # clickername = The name identifying the dropdown box being changed
 def callback1(clicker, timeframe, clickerName):
      # When dropdown is changed, check if its combo exists
-     print(clicker.get(), timeframe.get())
+     print(f'New clicker/timeframe combo: {clicker.get()}, {timeframe.get()}')
      # clickerName = argname(clicker)
      for keyName in srtCombo:
-          print(srtCombo[keyName])
-          print(clickerName, keyName)
+          print(f'Checking this clicker: {srtCombo[keyName]}')
+          print(f'Recieved clicker name: {clickerName}, Current key name: {keyName}')
           print(f'{clicker.get()}, {timeframe.get()} vs {srtCombo[keyName][4]}, {srtCombo[keyName][5]}')
           if [clicker.get(), timeframe.get()] == [srtCombo[keyName][4], srtCombo[keyName][5]]:
-               print(f'A duplicate has been found!')
-               if srtCombo[clickerName][1] == '':
-                    clicker.set(srtCombo[clickerName][0])
+               if clickerName == keyName:
+                    continue
                else:
-                    clicker.set(srtCombo[clickerName][1])
-               break
+                    print(f'A duplicate has been found!')
+                    messagebox.showinfo("ERROR", "You cannot have duplicate STOCK/TIMEFRAME combinations!")
+                    if srtCombo[clickerName][1] == '':
+                         clicker.set(srtCombo[clickerName][0])
+                    else:
+                         clicker.set(srtCombo[clickerName][1])
+                    break
      else:
           # If combo does not exist, allow change and move stock pointers
           # Check if there is already a pointer in stock rotation
@@ -81,12 +86,16 @@ def callback2(clicker, timeframe, clickerName):
           print(clickerName, keyName)
           print(f'{clicker.get()}, {timeframe.get()} vs {srtCombo[keyName][4]}, {srtCombo[keyName][5]}')
           if [clicker.get(), timeframe.get()] == [srtCombo[keyName][4], srtCombo[keyName][5]]:
-               print(f'A duplicate time has been found!')
-               if srtCombo[clickerName][3] == '':
-                    timeFrame1.set(srtCombo[clickerName][2])
+               if clickerName == keyName:
+                    continue
                else:
-                    timeFrame1.set(srtCombo[clickerName][3])
-               break
+                    print(f'A duplicate time has been found!')
+                    messagebox.showinfo("ERROR", "You cannot have duplicate STOCK/TIMEFRAME combinations!")
+                    if srtCombo[clickerName][3] == '':
+                         timeFrame1.set(srtCombo[clickerName][2])
+                    else:
+                         timeFrame1.set(srtCombo[clickerName][3])
+                    break
      else:
           # If combo does not exist, allow change and move stock pointers
           # Check if there is already a pointer in stock rotation
@@ -95,7 +104,7 @@ def callback2(clicker, timeframe, clickerName):
           else:
                srtCombo[clickerName][2] = srtCombo[clickerName][3]
                srtCombo[clickerName][3] = timeFrame1.get()
-          print(f'drop variable has been changed to {clicker.get()}')
+          print(f'drop variable has been changed to {timeframe.get()}')
           print([clicker.get(), timeframe.get()])
 
 # Stock 1
