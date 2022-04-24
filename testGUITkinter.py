@@ -1,17 +1,22 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter import scrolledtext as st
-import tkinter
 import pandas as pd
 
 # Indices as dataframe, Sheet 1 is main sheet, Sheet 2 has 5 for testing
 indices = pd.read_excel('tickers2.xlsx', sheet_name='Sheet 1')
+indDict = pd.Series(indices.Symbol.values, index=indices.CompanyName).to_dict()
+stockNameList = list(indDict.keys())
+print(f'{stockNameList}')
 
 # Tickers is a list of symbols as strings from the 'Symbol' column
 # of the dataframe 'indices'
 tickers = sorted(indices['Symbol'])
 # List of timeframes, to be changed to 5min, 30min, 1h
+# 1h has a time signal of HH:30
+# 5min has anything that is a multiple of 5
 timeFrames = ['HOURLY', 'DAILY', 'WEEKLY']
+timeSignals = ['30', '', '']
 
 # Create list to handle previous selection of stock
 
