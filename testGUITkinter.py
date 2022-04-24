@@ -1,5 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
+from tkinter import scrolledtext as st
+import tkinter
 import pandas as pd
 
 # Indices as dataframe, Sheet 1 is main sheet, Sheet 2 has 5 for testing
@@ -71,19 +73,21 @@ def callback1(clicker, timeframe, clickerName):
           # Check if there is already a pointer in stock rotation
           if srtCombo[clickerName][1] == '':
                srtCombo[clickerName][1] = clicker.get()
+               srtCombo[clickerName][4] = clicker.get()
           else:
                srtCombo[clickerName][0] = srtCombo[clickerName][1]
                srtCombo[clickerName][1] = clicker.get()
+               srtCombo[clickerName][4] = clicker.get()
           print(f'drop variable has been changed to {clicker.get()}')
-          print([clicker.get(), timeframe.get()])
+          print(f'New combo registered as {srtCombo[clickerName][4]}, {srtCombo[clickerName][5]}')
 
 def callback2(clicker, timeframe, clickerName):
      # When dropdown is changed, check if its combo exists
-     print(clicker.get(), timeframe.get())
+     print(f'New clicker/timeframe combo: {clicker.get()}, {timeframe.get()}')
      # clickerName = argname(clicker)
      for keyName in srtCombo:
-          print(srtCombo[keyName])
-          print(clickerName, keyName)
+          print(f'Checking this clicker: {srtCombo[keyName]}')
+          print(f'Recieved clicker name: {clickerName}, Current key name: {keyName}')
           print(f'{clicker.get()}, {timeframe.get()} vs {srtCombo[keyName][4]}, {srtCombo[keyName][5]}')
           if [clicker.get(), timeframe.get()] == [srtCombo[keyName][4], srtCombo[keyName][5]]:
                if clickerName == keyName:
@@ -92,18 +96,21 @@ def callback2(clicker, timeframe, clickerName):
                     print(f'A duplicate time has been found!')
                     messagebox.showinfo("ERROR", "You cannot have duplicate STOCK/TIMEFRAME combinations!")
                     if srtCombo[clickerName][3] == '':
-                         timeFrame1.set(srtCombo[clickerName][2])
+                         timeframe.set(srtCombo[clickerName][2])
                     else:
-                         timeFrame1.set(srtCombo[clickerName][3])
+                         timeframe.set(srtCombo[clickerName][3])
                     break
      else:
           # If combo does not exist, allow change and move stock pointers
           # Check if there is already a pointer in stock rotation
           if srtCombo[clickerName][3] == '':
-               srtCombo[clickerName][3] = timeFrame1.get()
+               srtCombo[clickerName][3] = timeframe.get()
+               srtCombo[clickerName][5] = timeframe.get()
           else:
                srtCombo[clickerName][2] = srtCombo[clickerName][3]
-               srtCombo[clickerName][3] = timeFrame1.get()
+               srtCombo[clickerName][3] = timeframe.get()
+               srtCombo[clickerName][5] = timeframe.get()
+               
           print(f'drop variable has been changed to {timeframe.get()}')
           print([clicker.get(), timeframe.get()])
 
@@ -245,4 +252,14 @@ exitButton.place(x=560, y=570)
 
 ########################################################
 
-mainloop()
+displayBox = st.ScrolledText(root, width=25, height=25, font=("Times New Roman", 15))
+displayBox.place(x=300, y=2)
+# displayBox.tag_config('BUY', background="black", foreground="lime")
+# displayBox.insert('end', "Hello\n", 'BUY')
+# displayBox.insert(tkinter.INSERT, "BUY SIGNAL\n")
+# displayBox.insert(tkinter.INSERT, "BEAN SIGNAL\n")
+# displayBox.delete("1.0","end")
+displayBox.configure(state="disabled")
+
+
+root.mainloop()
