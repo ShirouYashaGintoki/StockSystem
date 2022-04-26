@@ -41,14 +41,15 @@ print(f'{stockNameList}')
 # Tickers is a list of symbols as strings from the 'Symbol' column
 # of the dataframe 'indices'
 tickers = sorted(indices['Symbol'])
+
 # List of timeframes, to be changed to 5min, 30min, 1h
 # 1h has a time signal of HH:30
+# 30min is anything either HH:00 or HH:30
 # 5min has anything that is a multiple of 5
-timeFrames = ['HOURLY', 'DAILY', 'WEEKLY']
-timeSignals = ['30', '', '']
+timeFrames = ['5MIN', '30MIN', '1HOUR']
 
-# Create list to handle previous selection of stock
-
+# Dictionary to handle rotation of stock, time
+# and the current stock/time combination
 # Indexes 0 for last, 1 for new stock rotation
 # Indexes 2 for last, 3 for new time rotation
 # Indexes 4, 5 to store the stock time combination
@@ -60,7 +61,9 @@ srtCombo = {
      "clicked5" : ['', '', '', '', '', '']
 }
 
-# Establish Tkinter frame as root, set geometry
+
+
+# Establish Tkinter frame as root, set geometry, and resizable off
 root = Tk()
 root.title("Simple Stock Signal System")
 root.geometry("650x600")
@@ -77,6 +80,9 @@ timeFrame2 = StringVar(root)
 timeFrame3 = StringVar(root)
 timeFrame4 = StringVar(root)
 timeFrame5 = StringVar(root)
+
+def getStockData():
+     pass
 
 # Define callback function
 # Args
@@ -296,11 +302,15 @@ displayBox.place(x=300, y=2)
 # displayBox.delete("1.0","end")
 displayBox.configure(state="disabled")
 
-def hello(name):
-     print(f'hello {name}')
+# def hello(name):
+#      print(f'hello {name}')
 
-rt = RepeatedTimer(1, hello, "beaner")
+# rt = RepeatedTimer(1, hello, "beans")
+
+# _5min = RepeatedTimer(300, getData, someData)
+
 
 root.mainloop()
 
-rt.stop()
+
+# _5min.stop()
