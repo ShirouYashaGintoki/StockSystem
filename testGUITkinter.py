@@ -305,12 +305,10 @@ displayBox.configure(state="disabled")
 # def hello(name):
 #      print(f'hello {name}')
 
-# rt = RepeatedTimer(1, hello, "beans")
+# rt = RepeatedTimer(1, hello, "beans") 
 
-# _5min = RepeatedTimer(300, getData, someData)
-
+_5min = RepeatedTimer(300, getStockData, someData)
 
 root.mainloop()
 
-
-# _5min.stop()
+_5min.stop()
