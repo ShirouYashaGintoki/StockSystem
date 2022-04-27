@@ -4,6 +4,7 @@ from tkinter import scrolledtext as st
 import pandas as pd
 import threading
 import time
+from datetime import datetime
 
 class RepeatedTimer(object):
   def __init__(self, interval, function, *args, **kwargs):
@@ -32,11 +33,20 @@ class RepeatedTimer(object):
     self._timer.cancel()
     self.is_running = False
 
+# URL for API
+url = "https://twelve-data1.p.rapidapi.com/time_series"
+
+# Headers for API
+headers = {
+    'x-rapidapi-host': "twelve-data1.p.rapidapi.com",
+    'x-rapidapi-key': "d9d76c3270msh16a19417bd4b485p1b0395jsn955227be6f56"
+}
+
 # Indices as dataframe, Sheet 1 is main sheet, Sheet 2 has 5 for testing
 indices = pd.read_excel('tickers2.xlsx', sheet_name='Sheet 1')
 indDict = pd.Series(indices.Symbol.values, index=indices.CompanyName).to_dict()
 stockNameList = list(indDict.keys())
-print(f'{stockNameList}')
+# print(f'{stockNameList}')
 
 # Tickers is a list of symbols as strings from the 'Symbol' column
 # of the dataframe 'indices'
@@ -81,9 +91,82 @@ timeFrame3 = StringVar(root)
 timeFrame4 = StringVar(root)
 timeFrame5 = StringVar(root)
 
-def getStockData():
-     pass
+def run_once(f):
+     def wrapper(*args, **kwargs):
+          if not wrapper.has_run:
+               wrapper.has_run = True
+               return f(*args, **kwargs)
+     wrapper.has_run = False
+     return wrapper
 
+
+@run_once
+def syncTiming5():
+     now = str(datetime.now())
+     splitNow = now.split(":")
+     minutes = int(splitNow[1])
+     seconds = int(float(splitNow[2]))
+     if minutes % 5 == 0:
+          if seconds > 30:
+               return 6
+          return 5
+     else:
+          counter = 0
+          min2 = minutes
+          while min2 % 5 != 0:
+               min2 += 1
+               counter += 1
+          if seconds > 30:
+               counter += 1
+          return counter 
+
+@run_once
+def syncTiming30():
+     now = str(datetime.now())
+     splitNow = now.split(":")
+     minutes = int(splitNow[1])
+     seconds = int(float(splitNow[2]))
+     if minutes == 30 or minutes == 0:
+          if seconds > 30:
+               return 31
+          else:
+               return 30
+     else:
+          counter = 0
+          min2 = minutes
+          while min2 != 30 or min2 != 0:
+               min2 += 1
+               counter +=1
+               if min2 == 60:
+                    break
+               # print(str(min2), str(counter))
+          if seconds > 30:
+               counter += 1
+          return counter
+
+@run_once
+def syncTiming60():
+     now = str(datetime.now())
+     splitNow = now.split(":")
+     minutes = int(splitNow[1])
+     seconds = int(float(splitNow[2]))
+     if minutes < 30:
+          setTime = 30 - minutes
+          if abs(seconds) > 30:
+               setTime+=1
+               if setTime > 30:
+                    setTime = 60 - minutes
+                    return setTime
+               return setTime
+          return setTime
+     else:
+          setTime = 60 - minutes
+          if abs(seconds) > 30:
+               setTime += 1
+               return setTime
+          return setTime
+
+     
 # Define callback function
 # Args
 # clicker = The StringVar associated with the stock dropdown box
@@ -120,6 +203,7 @@ def callback1(clicker, timeframe, clickerName):
                srtCombo[clickerName][4] = clicker.get()
           print(f'drop variable has been changed to {clicker.get()}')
           print(f'New combo registered as {srtCombo[clickerName][4]}, {srtCombo[clickerName][5]}')
+
 
 def callback2(clicker, timeframe, clickerName):
      # When dropdown is changed, check if its combo exists
@@ -307,8 +391,14 @@ displayBox.configure(state="disabled")
 
 # rt = RepeatedTimer(1, hello, "beans") 
 
-_5min = RepeatedTimer(300, getStockData, someData)
+fiveMinSyncTime = syncTiming5()
+thirtyMinSyncTime = syncTiming30()
+hourSyncTime = syncTiming60()
+
+print(str(fiveMinSyncTime))
+print(str(thirtyMinSyncTime))
+print(str(hourSyncTime))
 
 root.mainloop()
 
-_5min.stop()
+# _5min.stop()
