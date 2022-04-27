@@ -166,6 +166,16 @@ def syncTiming60():
                return setTime
           return setTime
 
+def getData(tf):
+     if tf == "5MIN" :
+          print("5MIN interval reached")
+          _5minThread.interval = 300
+     if tf == "30MIN":
+          print("30MIN interval reached")
+          _30minThread.interval = 1800
+     if tf == "1HOUR":
+          print("1HOUR interval reached")
+          _1hThread.interval = 3600
      
 # Define callback function
 # Args
@@ -391,14 +401,20 @@ displayBox.configure(state="disabled")
 
 # rt = RepeatedTimer(1, hello, "beans") 
 
-fiveMinSyncTime = syncTiming5()
-thirtyMinSyncTime = syncTiming30()
-hourSyncTime = syncTiming60()
+fiveMinSyncTime = syncTiming5() * 6
+thirtyMinSyncTime = syncTiming30() * 6
+hourSyncTime = syncTiming60() * 6
 
-print(str(fiveMinSyncTime))
-print(str(thirtyMinSyncTime))
-print(str(hourSyncTime))
+print(f'Five mins: {fiveMinSyncTime} seconds')
+print(f'Thirty mins: {thirtyMinSyncTime} seconds ')
+print(f'One hour: {hourSyncTime} seconds')
+
+_5minThread = RepeatedTimer(fiveMinSyncTime, getData, "5MIN")
+_30minThread = RepeatedTimer(thirtyMinSyncTime, getData, "30MIN")
+_1hThread = RepeatedTimer(hourSyncTime, getData, "1HOUR")
 
 root.mainloop()
 
-# _5min.stop()
+_5minThread.stop()
+_30minThread.stop()
+_1hThread.stop()
