@@ -7,31 +7,32 @@ import time
 from datetime import datetime
 
 class RepeatedTimer(object):
-  def __init__(self, interval, function, *args, **kwargs):
-    self._timer = None
-    self.interval = interval
-    self.function = function
-    self.args = args
-    self.kwargs = kwargs
-    self.is_running = False
-    self.next_call = time.time()
-    self.start()
+     def __init__(self, interval, function, *args, **kwargs):
+          self._timer = None
+          self.interval = interval
+          self.function = function
+          self.args = args
+          self.kwargs = kwargs
+          self.is_running = False
+          self.next_call = time.time()
+          self.start()
 
-  def _run(self):
-    self.is_running = False
-    self.start()
-    self.function(*self.args, **self.kwargs)
+     def _run(self):
+          self.is_running = False
+          self.start()
+          self.function(*self.args, **self.kwargs)
 
-  def start(self):
-    if not self.is_running:
-      self.next_call += self.interval
-      self._timer = threading.Timer(self.next_call - time.time(), self._run)
-      self._timer.start()
-      self.is_running = True
+     def start(self):
+          if not self.is_running:
+               self.next_call += self.interval
+               self._timer = threading.Timer(self.next_call - time.time(), self._run)
+               self._timer.start()
+               self.is_running = True
 
-  def stop(self):
-    self._timer.cancel()
-    self.is_running = False
+     def stop(self):
+          self._timer.cancel()
+          self.is_running = False
+
 
 # URL for API
 url = "https://twelve-data1.p.rapidapi.com/time_series"
@@ -100,7 +101,6 @@ def run_once(f):
      return wrapper
 
 
-@run_once
 def syncTiming5():
      now = str(datetime.now())
      splitNow = now.split(":")
@@ -169,14 +169,13 @@ def syncTiming60():
 def getData(tf):
      if tf == "5MIN" :
           print("5MIN interval reached")
-          _5minThread.interval = 300
      if tf == "30MIN":
           print("30MIN interval reached")
-          _30minThread.interval = 1800
      if tf == "1HOUR":
           print("1HOUR interval reached")
-          _1hThread.interval = 3600
+     print(datetime.now())
      
+          
 # Define callback function
 # Args
 # clicker = The StringVar associated with the stock dropdown box
@@ -401,17 +400,21 @@ displayBox.configure(state="disabled")
 
 # rt = RepeatedTimer(1, hello, "beans") 
 
-fiveMinSyncTime = syncTiming5() * 6
-thirtyMinSyncTime = syncTiming30() * 6
-hourSyncTime = syncTiming60() * 6
+fiveMinSyncTime = syncTiming5() * 60
+thirtyMinSyncTime = syncTiming30() *60
+hourSyncTime = syncTiming60() * 60
 
-print(f'Five mins: {fiveMinSyncTime} seconds')
-print(f'Thirty mins: {thirtyMinSyncTime} seconds ')
-print(f'One hour: {hourSyncTime} seconds')
+print(f'Five mins in: {fiveMinSyncTime} seconds')
+print(f'Thirty mins in: {thirtyMinSyncTime} seconds ')
+print(f'One hour in: {hourSyncTime} seconds')
 
 _5minThread = RepeatedTimer(fiveMinSyncTime, getData, "5MIN")
 _30minThread = RepeatedTimer(thirtyMinSyncTime, getData, "30MIN")
 _1hThread = RepeatedTimer(hourSyncTime, getData, "1HOUR")
+
+_5minThread.interval = 300
+_30minThread.interval = 1800
+_1hThread.interval = 3600
 
 root.mainloop()
 
