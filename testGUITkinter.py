@@ -121,7 +121,7 @@ def syncTiming5():
           return counter 
 
 @run_once
-def syncTiming3060():
+def syncTiming30():
      now = str(datetime.now())
      splitNow = now.split(":")
      minutes = int(splitNow[1])
@@ -132,17 +132,16 @@ def syncTiming3060():
           else:
                return 30
      else:
-          counter = 0
-          min2 = minutes
-          while min2 != 30 or min2 != 0:
-               min2 += 1
-               counter +=1
-               if min2 == 60:
-                    break
-               # print(str(min2), str(counter))
-          if seconds > 30:
-               counter += 1
-          return counter
+          if minutes > 30:
+               ttw = 60 - minutes
+               if seconds > 30:
+                    ttw += 1
+               return ttw
+          else:
+               ttw = 30 - minutes
+               if seconds > 30:
+                    ttw += 1
+               return ttw
 
 @run_once
 def syncTiming60():
@@ -151,6 +150,24 @@ def syncTiming60():
      minutes = int(splitNow[1])
      seconds = int(float(splitNow[2]))
      if minutes == 30 or minutes == 0:
+          if minutes == 30:
+               if seconds > 30:
+                    return 61
+               else:
+                    return 60
+          elif minutes == 0:
+               if seconds > 30:
+                    return 31
+               else:
+                    return 30
+     else:
+          if minutes > 30:
+               ttw = (60 - minutes) + 60
+               return ttw
+          else:
+               ttw = 30 - minutes
+               return ttw
+
           
      
 
