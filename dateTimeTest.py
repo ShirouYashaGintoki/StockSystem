@@ -1,26 +1,11 @@
-from datetime import datetime
+import pandas as pd
 
-def getTime():
-    now = str(datetime.now())
-    splitNow = now.split(":")
-    minutes = int(splitNow[1])
-    seconds = int(float(splitNow[2]))
-    if minutes == 30 or minutes == 0:
-        if seconds > 30:
-            return 31
-        else:
-            return 30
-    else:
-        counter = 0
-        min2 = minutes
-        while min2 != 30 or min2 != 0:
-            min2 += 1
-            counter +=1
-            if min2 == 60:
-                break
-            print(str(min2), str(counter))
-        if seconds > 30:
-            counter += 1
-        return counter
+indices = pd.read_excel('tickers2.xlsx', sheet_name='Sheet 1')
+# Create a dictionary of stock names and their ticker symbols
+indDict = pd.Series(indices.Symbol.values, index=indices.CompanyName).to_dict()
+# Create a list of stock names for display purposes
+stockNameList = sorted(list(indDict.keys()))
 
-print(getTime())
+key = "APPLE INC."
+
+print(indDict[key])

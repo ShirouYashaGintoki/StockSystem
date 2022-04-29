@@ -1,10 +1,14 @@
+from re import L
 from tkinter import *
 from tkinter import messagebox
 from tkinter import scrolledtext as st
 import pandas as pd
+from pandas import json_normalize
 import threading
 import time
 from datetime import datetime
+import requests
+import tabulate
 
 class RepeatedTimer(object):
      def __init__(self, interval, function, *args, **kwargs):
@@ -45,13 +49,15 @@ headers = {
 
 # Indices as dataframe, Sheet 1 is main sheet, Sheet 2 has 5 for testing
 indices = pd.read_excel('tickers2.xlsx', sheet_name='Sheet 1')
+# Create a dictionary of stock names and their ticker symbols
 indDict = pd.Series(indices.Symbol.values, index=indices.CompanyName).to_dict()
-stockNameList = list(indDict.keys())
+# Create a list of stock names for display purposes
+stockNameList = sorted(list(indDict.keys()))
 # print(f'{stockNameList}')
 
 # Tickers is a list of symbols as strings from the 'Symbol' column
 # of the dataframe 'indices'
-tickers = sorted(indices['Symbol'])
+# tickers = sorted(indices['Symbol'])
 
 # List of timeframes, to be changed to 5min, 30min, 1h
 # 1h has a time signal of HH:30
@@ -92,27 +98,31 @@ timeFrame3 = StringVar(root)
 timeFrame4 = StringVar(root)
 timeFrame5 = StringVar(root)
 
-def run_once(f):
-     def wrapper(*args, **kwargs):
-          if not wrapper.has_run:
-               wrapper.has_run = True
-               return f(*args, **kwargs)
-     wrapper.has_run = False
-     return wrapper
 
-
+# Function to synchronise timing with current time
 def syncTiming5():
+     # Get the current time as string
      now = str(datetime.now())
+     # Split string by colon
      splitNow = now.split(":")
+     # Get minutes and seconds as ints from split list by typecasting
      minutes = int(splitNow[1])
      seconds = int(float(splitNow[2]))
+     # Check if minutes is already a multiple of 5
      if minutes % 5 == 0:
+          # Check if the minute is close to completion
           if seconds > 30:
+               # If so, add an extra minute
                return 6
-          return 5
+          else:
+               # Otherwise return 5
+               return 5
      else:
+          # Else need to find the next multiple of 5
+          # Set counter
           counter = 0
           min2 = minutes
+          # Loop until min2 is a multiple of 5
           while min2 % 5 != 0:
                min2 += 1
                counter += 1
@@ -120,7 +130,6 @@ def syncTiming5():
                counter += 1
           return counter 
 
-@run_once
 def syncTiming30():
      now = str(datetime.now())
      splitNow = now.split(":")
@@ -143,7 +152,6 @@ def syncTiming30():
                     ttw += 1
                return ttw
 
-@run_once
 def syncTiming60():
      now = str(datetime.now())
      splitNow = now.split(":")
@@ -168,12 +176,24 @@ def syncTiming60():
                ttw = 30 - minutes
                return ttw
 
-          
-     
 
 def getData(tf):
      if tf == "5MIN" :
           print("5MIN interval reached")
+          symbolsToGet = []
+          for key in srtCombo:
+               if srtCombo[key][5] == "5MIN":
+                    symbolsToGet.append(indDict[srtCombo[key][4]])
+          print(symbolsToGet)
+          for asset in symbolsToGet:
+               try:
+                    querystring = {"symbol":asset,"interval":"1h","outputsize":"30","format":"json"}
+                    response = requests.request("GET", url, headers=headers, params=querystring)
+                    jsonResponse = response.json()
+                    df2 = json_normalize(jsonResponse, 'values')
+                    # print(tabulate(df2, showindex=False, headers=list(df2.columns)))
+               except Exception as e:
+                    print(f'There has been an error: {e}')
      if tf == "30MIN":
           print("30MIN interval reached")
      if tf == "1HOUR":
@@ -188,12 +208,12 @@ def getData(tf):
 # clickername = The name identifying the dropdown box being changed
 def callback1(clicker, timeframe, clickerName):
      # When dropdown is changed, check if its combo exists
-     print(f'New clicker/timeframe combo: {clicker.get()}, {timeframe.get()}')
+     # print(f'New clicker/timeframe combo: {clicker.get()}, {timeframe.get()}')
      # clickerName = argname(clicker)
      for keyName in srtCombo:
-          print(f'Checking this clicker: {srtCombo[keyName]}')
-          print(f'Recieved clicker name: {clickerName}, Current key name: {keyName}')
-          print(f'{clicker.get()}, {timeframe.get()} vs {srtCombo[keyName][4]}, {srtCombo[keyName][5]}')
+          # print(f'Checking this clicker: {srtCombo[keyName]}')
+          # print(f'Recieved clicker name: {clickerName}, Current key name: {keyName}')
+          # print(f'{clicker.get()}, {timeframe.get()} vs {srtCombo[keyName][4]}, {srtCombo[keyName][5]}')
           if [clicker.get(), timeframe.get()] == [srtCombo[keyName][4], srtCombo[keyName][5]]:
                if clickerName == keyName:
                     continue
@@ -221,12 +241,12 @@ def callback1(clicker, timeframe, clickerName):
 
 def callback2(clicker, timeframe, clickerName):
      # When dropdown is changed, check if its combo exists
-     print(f'New clicker/timeframe combo: {clicker.get()}, {timeframe.get()}')
+     # print(f'New clicker/timeframe combo: {clicker.get()}, {timeframe.get()}')
      # clickerName = argname(clicker)
      for keyName in srtCombo:
-          print(f'Checking this clicker: {srtCombo[keyName]}')
-          print(f'Recieved clicker name: {clickerName}, Current key name: {keyName}')
-          print(f'{clicker.get()}, {timeframe.get()} vs {srtCombo[keyName][4]}, {srtCombo[keyName][5]}')
+          # print(f'Checking this clicker: {srtCombo[keyName]}')
+          # print(f'Recieved clicker name: {clickerName}, Current key name: {keyName}')
+          # print(f'{clicker.get()}, {timeframe.get()} vs {srtCombo[keyName][4]}, {srtCombo[keyName][5]}')
           if [clicker.get(), timeframe.get()] == [srtCombo[keyName][4], srtCombo[keyName][5]]:
                if clickerName == keyName:
                     continue
@@ -255,7 +275,7 @@ def callback2(clicker, timeframe, clickerName):
 
 # Stock 1
 #####################################
-clicked1.set(tickers[0])
+clicked1.set(stockNameList[0])
 timeFrame1.set(timeFrames[0])
 srtCombo["clicked1"][0] = clicked1.get()
 srtCombo["clicked1"][2] = timeFrame1.get()
@@ -268,7 +288,7 @@ timeFrame1.trace_add("write", lambda var_name, var_index, operation: callback2(c
 
 # Stock 2
 #####################################
-clicked2.set(tickers[1])
+clicked2.set(stockNameList[1])
 timeFrame2.set(timeFrames[0])
 srtCombo["clicked2"][0] = clicked2.get()
 srtCombo["clicked2"][2] = timeFrame2.get()
@@ -280,7 +300,7 @@ timeFrame2.trace_add("write", lambda var_name, var_index, operation: callback2(c
 
 # Stock 3
 #####################################
-clicked3.set(tickers[2])
+clicked3.set(stockNameList[2])
 timeFrame3.set(timeFrames[0])
 srtCombo["clicked3"][0] = clicked3.get()
 srtCombo["clicked3"][2] = timeFrame3.get()
@@ -292,7 +312,7 @@ timeFrame3.trace_add("write", lambda var_name, var_index, operation: callback2(c
 
 # Stock 4
 #####################################
-clicked4.set(tickers[3])
+clicked4.set(stockNameList[3])
 timeFrame4.set(timeFrames[0])
 srtCombo["clicked4"][0] = clicked4.get()
 srtCombo["clicked4"][2] = timeFrame4.get()
@@ -305,7 +325,7 @@ timeFrame4.trace_add("write", lambda var_name, var_index, operation: callback2(c
 
 # Stock 5
 #####################################
-clicked5.set(tickers[4])
+clicked5.set(stockNameList[4])
 timeFrame5.set(timeFrames[0])
 srtCombo["clicked5"][0] = clicked5.get()
 srtCombo["clicked5"][2] = timeFrame5.get()
@@ -314,9 +334,9 @@ srtCombo["clicked5"][5] = timeFrame5.get()
 clicked5.trace_add("write", lambda var_name, var_index, operation: callback1(clicked5, timeFrame5, "clicked5"))
 timeFrame5.trace_add("write", lambda var_name, var_index, operation: callback2(clicked5, timeFrame5, "clicked5"))
 #####################################
-
-drop1 = OptionMenu(root, clicked1, *tickers)
-drop1.config(width=22, bg="green", foreground="white")
+stockNameList
+drop1 = OptionMenu(root, clicked1, *stockNameList)
+drop1.config(width=25, bg="green", foreground="white")
 drop1.place(x=0, y=0)
 
 button1 = Button(root, text="Get chart")
@@ -325,12 +345,12 @@ button1.place(x=0, y=35)
 
 dropTf1 = OptionMenu(root, timeFrame1, *timeFrames)
 dropTf1.config(width=10, bg="blue", foreground="white")
-dropTf1.place(x=72, y=32)
+dropTf1.place(x=90, y=32)
 
 ########################################################
 
-drop2 = OptionMenu(root, clicked2, *tickers)
-drop2.config(width=22, bg="green", foreground="white")
+drop2 = OptionMenu(root, clicked2, *stockNameList)
+drop2.config(width=25, bg="green", foreground="white")
 drop2.place(x=0, y=80)
 
 button2 = Button(root, text="Get chart")
@@ -339,12 +359,12 @@ button2.place(x=0, y=115)
 
 dropTf2 = OptionMenu(root, timeFrame2, *timeFrames)
 dropTf2.config(width=10, bg="blue", foreground="white")
-dropTf2.place(x=72, y=112)
+dropTf2.place(x=90, y=112)
 
 ########################################################
 
-drop3 = OptionMenu(root, clicked3, *tickers)
-drop3.config(width=22, bg="green", foreground="white")
+drop3 = OptionMenu(root, clicked3, *stockNameList)
+drop3.config(width=25, bg="green", foreground="white")
 drop3.place(x=0, y=160)
 
 button3 = Button(root, text="Get chart")
@@ -353,12 +373,12 @@ button3.place(x=0, y=195)
 
 dropTf3 = OptionMenu(root, timeFrame3, *timeFrames)
 dropTf3.config(width=10, bg="blue", foreground="white")
-dropTf3.place(x=72, y=192)
+dropTf3.place(x=90, y=192)
 
 ########################################################
 
-drop4 = OptionMenu(root, clicked4, *tickers)
-drop4.config(width=22, bg="green", foreground="white")
+drop4 = OptionMenu(root, clicked4, *stockNameList)
+drop4.config(width=25, bg="green", foreground="white")
 drop4.place(x=0, y=240)
 
 button4 = Button(root, text="Get chart")
@@ -367,12 +387,12 @@ button4.place(x=0, y=275)
 
 dropTf4 = OptionMenu(root, timeFrame4, *timeFrames)
 dropTf4.config(width=10, bg="blue", foreground="white")
-dropTf4.place(x=72, y=272)
+dropTf4.place(x=90, y=272)
 
 # ########################################################
 
-drop5 = OptionMenu(root, clicked5, *tickers)
-drop5.config(width=22, bg="green", foreground="white")
+drop5 = OptionMenu(root, clicked5, *stockNameList)
+drop5.config(width=25, bg="green", foreground="white")
 drop5.place(x=0, y=320)
 
 button5 = Button(root, text="Get chart")
@@ -381,7 +401,7 @@ button5.place(x=0, y=355)
 
 dropTf5 = OptionMenu(root, timeFrame5, *timeFrames)
 dropTf5.config(width=10, bg="blue", foreground="white")
-dropTf5.place(x=72, y=352)
+dropTf5.place(x=90, y=352)
 
 ########################################################
 
