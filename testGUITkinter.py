@@ -47,7 +47,8 @@ def createTable(assetName, timeFrame):
           ema12 FLOAT(2),
           ema26 FLOAT(2),
           macd FLOAT(7),
-          buysellsignal FLOAT(6))
+          sigval FLOAT(6),
+          selector varchar(4))
           """ %(assetName + timeFrame))
      except Exception as e:
           print(f'Error: {e}')
@@ -62,15 +63,22 @@ def calculateAndInsert(asset, period):
           response = requests.request("GET", url, headers=headers, params=querystring)
           jsonResponse = response.json()
           df2 = json_normalize(jsonResponse, 'values')
-          print(tabulate(df2, showindex=False, headers=list(df2.columns)))
+          # print(tabulate(df2, showindex=False, headers=list(df2.columns)))
           df2.drop(['open', 'high', 'low', 'volume'], axis=1, inplace=True)
           df2.set_index('datetime', inplace=True)
           df2 = df2.iloc[::-1]
-          print(df2.iloc[0])
+          # print(df2.iloc[0])
           df2['EMA12'] = df2.close.ewm(span=12).mean()
           df2['EMA26'] = df2.close.ewm(span=26).mean()
           df2['MACD'] = df2.EMA12 - df2.EMA26
-          df2['buysellsignal'] = df2.MACD.ewm(span=9).mean()
+          df2['sigval'] = df2.MACD.ewm(span=9).mean()
+          df2['selector'] = ""
+
+          for i in range(1, len(df2)):
+               if df2.MACD.iloc[i] > df2.sigval.iloc[i] and df2.MACD.iloc[i-1] < df2.sigval.iloc[i-1]:
+                    df2.iloc[[i], 5] = 'BUY'
+               elif df2.MACD.iloc[i] < df2.sigval.iloc[i] and df2.MACD.iloc[i-1] > df2.sigval.iloc[i-1]:
+                    df2.iloc[[i], 5] = 'SELL'
           df2.to_sql((asset.lower()+period), engine, if_exists="append")
      except Exception as e:
           print(f'Exception: {e}')
