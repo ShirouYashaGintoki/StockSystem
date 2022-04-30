@@ -10,6 +10,7 @@ from datetime import datetime
 import requests
 import tabulate
 
+
 class RepeatedTimer(object):
      def __init__(self, interval, function, *args, **kwargs):
           self._timer = None
@@ -36,6 +37,7 @@ class RepeatedTimer(object):
      def stop(self):
           self._timer.cancel()
           self.is_running = False
+
 
 
 # URL for API
