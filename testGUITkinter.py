@@ -1,4 +1,3 @@
-from re import L
 from tkinter import *
 from tkinter import messagebox
 from tkinter import scrolledtext as st
@@ -8,8 +7,73 @@ import threading
 import time
 from datetime import datetime
 import requests
-import tabulate
+from tabulate import tabulate
+import mysql.connector
+import sqlalchemy
+import pymysql
 
+# beansontoastA1? for PC
+# dspA123 for laptop
+db = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    passwd="dspA123"
+)
+
+my_cursor = db.cursor()
+
+try:
+     my_cursor.execute("CREATE DATABASE StockTables")
+except Exception:
+     print("DB schema already exists")
+
+db.close()
+
+
+def createTable(assetName, timeFrame):
+     try:
+          db = mysql.connector.connect(
+               host="localhost",
+               user="root",
+               passwd="dspA123",
+               database="StockTables"
+          )
+          my_cursor = db.cursor()
+
+          print(timeFrame)
+          my_cursor.execute("""CREATE TABLE IF NOT EXISTS %s (
+          datetime DATETIME,
+          close FLOAT(5),
+          ema12 FLOAT(2),
+          ema26 FLOAT(2),
+          macd FLOAT(7),
+          buysellsignal FLOAT(6))
+          """ %(assetName + timeFrame))
+     except Exception as e:
+          print(f'Error: {e}')
+     finally:
+          my_cursor.close()
+
+def calculateAndInsert(asset, period):
+     try:
+          pymysql.install_as_MySQLdb()
+          engine = sqlalchemy.create_engine('mysql://root:dspA123@localhost:3306/stocktables')
+          querystring = {"symbol":asset,"interval":period,"outputsize":"30","format":"json"}
+          response = requests.request("GET", url, headers=headers, params=querystring)
+          jsonResponse = response.json()
+          df2 = json_normalize(jsonResponse, 'values')
+          print(tabulate(df2, showindex=False, headers=list(df2.columns)))
+          df2.drop(['open', 'high', 'low', 'volume'], axis=1, inplace=True)
+          df2.set_index('datetime', inplace=True)
+          df2 = df2.iloc[::-1]
+          print(df2.iloc[0])
+          df2['EMA12'] = df2.close.ewm(span=12).mean()
+          df2['EMA26'] = df2.close.ewm(span=26).mean()
+          df2['MACD'] = df2.EMA12 - df2.EMA26
+          df2['buysellsignal'] = df2.MACD.ewm(span=9).mean()
+          df2.to_sql((asset.lower()+period), engine, if_exists="append")
+     except Exception as e:
+          print(f'Exception: {e}')
 
 class RepeatedTimer(object):
      def __init__(self, interval, function, *args, **kwargs):
@@ -180,19 +244,18 @@ def syncTiming60():
 
 
 def getData(tf):
-     if tf == "5MIN" :
+     if tf == "5min" :
           print("5MIN interval reached")
           symbolsToGet = []
           for key in srtCombo:
                if srtCombo[key][5] == "5MIN":
                     symbolsToGet.append(indDict[srtCombo[key][4]])
           print(symbolsToGet)
+          for assetName in symbolsToGet:
+               createTable(assetName, tf)
           for asset in symbolsToGet:
                try:
-                    querystring = {"symbol":asset,"interval":"1h","outputsize":"30","format":"json"}
-                    response = requests.request("GET", url, headers=headers, params=querystring)
-                    jsonResponse = response.json()
-                    df2 = json_normalize(jsonResponse, 'values')
+                    calculateAndInsert(asset, tf)
                     # print(tabulate(df2, showindex=False, headers=list(df2.columns)))
                except Exception as e:
                     print(f'There has been an error: {e}')
@@ -435,9 +498,9 @@ print(f'Five mins in: {fiveMinSyncTime} seconds')
 print(f'Thirty mins in: {thirtyMinSyncTime} seconds ')
 print(f'One hour in: {hourSyncTime} seconds')
 
-_5minThread = RepeatedTimer(fiveMinSyncTime, getData, "5MIN")
-_30minThread = RepeatedTimer(thirtyMinSyncTime, getData, "30MIN")
-_1hThread = RepeatedTimer(hourSyncTime, getData, "1HOUR")
+_5minThread = RepeatedTimer(fiveMinSyncTime, getData, "5min")
+_30minThread = RepeatedTimer(thirtyMinSyncTime, getData, "30min")
+_1hThread = RepeatedTimer(hourSyncTime, getData, "1hs")
 
 _5minThread.interval = 300
 _30minThread.interval = 1800

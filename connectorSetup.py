@@ -4,11 +4,12 @@ from sqlalchemy import create_engine
 import sqlalchemy
 
 
-# beansontoastA1?
+# beansontoastA1? for PC
+# dspA123 for laptop
 db = mysql.connector.connect(
     host="localhost",
     user="root",
-    passwd="beansontoastA1?",
+    passwd="dspA123",
     database="testdb"
 )
 
