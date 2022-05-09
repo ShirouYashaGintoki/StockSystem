@@ -43,7 +43,7 @@ for ticker in tickers:
         # Sleep for a minute
         time.sleep(60)
     try:
-        querystring = {"symbol":ticker,"interval":"1h","outputsize":"30","format":"json"}
+        querystring = {"symbol":"ABDE","interval":"1h","outputsize":"30","format":"json"}
         response = requests.request("GET", url, headers=headers, params=querystring)
         jsonResponse = response.json()
         df2 = json_normalize(jsonResponse, 'values')

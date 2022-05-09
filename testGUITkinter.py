@@ -12,105 +12,6 @@ import mysql.connector
 import sqlalchemy
 import pymysql
 
-# beansontoastA1? for PC
-# dspA123 for laptop
-db = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    passwd="dspA123"
-)
-
-my_cursor = db.cursor()
-
-try:
-     my_cursor.execute("CREATE DATABASE StockTables")
-except Exception:
-     print("DB schema already exists")
-
-db.close()
-
-
-def createTable(assetName, timeFrame):
-     try:
-          db = mysql.connector.connect(
-               host="localhost",
-               user="root",
-               passwd="dspA123",
-               database="StockTables"
-          )
-          my_cursor = db.cursor()
-
-          print(timeFrame)
-          my_cursor.execute("""CREATE TABLE IF NOT EXISTS %s (
-          datetime DATETIME,
-          close FLOAT(5),
-          ema12 FLOAT(2),
-          ema26 FLOAT(2),
-          macd FLOAT(7),
-          sigval FLOAT(6),
-          selector varchar(4))
-          """ %(assetName + timeFrame))
-     except Exception as e:
-          print(f'Error: {e}')
-     finally:
-          my_cursor.close()
-
-def calculateAndInsert(asset, period):
-     try:
-          pymysql.install_as_MySQLdb()
-          engine = sqlalchemy.create_engine('mysql://root:dspA123@localhost:3306/stocktables')
-          querystring = {"symbol":asset,"interval":period,"outputsize":"30","format":"json"}
-          response = requests.request("GET", url, headers=headers, params=querystring)
-          jsonResponse = response.json()
-          df2 = json_normalize(jsonResponse, 'values')
-          # print(tabulate(df2, showindex=False, headers=list(df2.columns)))
-          df2.drop(['open', 'high', 'low', 'volume'], axis=1, inplace=True)
-          df2.set_index('datetime', inplace=True)
-          df2 = df2.iloc[::-1]
-          # print(df2.iloc[0])
-          df2['EMA12'] = df2.close.ewm(span=12).mean()
-          df2['EMA26'] = df2.close.ewm(span=26).mean()
-          df2['MACD'] = df2.EMA12 - df2.EMA26
-          df2['sigval'] = df2.MACD.ewm(span=9).mean()
-          df2['selector'] = ""
-
-          for i in range(1, len(df2)):
-               if df2.MACD.iloc[i] > df2.sigval.iloc[i] and df2.MACD.iloc[i-1] < df2.sigval.iloc[i-1]:
-                    df2.iloc[[i], 5] = 'BUY'
-               elif df2.MACD.iloc[i] < df2.sigval.iloc[i] and df2.MACD.iloc[i-1] > df2.sigval.iloc[i-1]:
-                    df2.iloc[[i], 5] = 'SELL'
-          df2.to_sql((asset.lower()+period), engine, if_exists="append")
-     except Exception as e:
-          print(f'Exception: {e}')
-
-class RepeatedTimer(object):
-     def __init__(self, interval, function, *args, **kwargs):
-          self._timer = None
-          self.interval = interval
-          self.function = function
-          self.args = args
-          self.kwargs = kwargs
-          self.is_running = False
-          self.next_call = time.time()
-          self.start()
-
-     def _run(self):
-          self.is_running = False
-          self.start()
-          self.function(*self.args, **self.kwargs)
-
-     def start(self):
-          if not self.is_running:
-               self.next_call += self.interval
-               self._timer = threading.Timer(self.next_call - time.time(), self._run)
-               self._timer.start()
-               self.is_running = True
-
-     def stop(self):
-          self._timer.cancel()
-          self.is_running = False
-
-
 
 # URL for API
 url = "https://twelve-data1.p.rapidapi.com/time_series"
@@ -152,6 +53,187 @@ srtCombo = {
      "clicked5" : ['', '', '', '', '', '']
 }
 
+# beansontoastA1? for PC
+# dspA123 for laptop
+# Establish connection using mysql connector
+db = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    passwd="dspA123"
+)
+
+# Create cursor
+my_cursor = db.cursor()
+
+# Try to create database, catch exception if fails
+try:
+     my_cursor.execute("CREATE DATABASE StockTables")
+except Exception:
+     print("DB schema already exists")
+
+# Close database connection now
+db.close()
+
+# Function to create a table in the database
+# for a given asset and timeframe combination
+# Args
+# assetName -> Given name of asset as string
+# timeFrame -> Given time frame as string
+def createTable(assetName, timeFrame):
+     # Try to establish connection to db schema
+     try:
+          db = mysql.connector.connect(
+               host="localhost",
+               user="root",
+               passwd="dspA123",
+               database="StockTables"
+          )
+          # Create cursor
+          my_cursor = db.cursor()
+
+          print(timeFrame)
+          # Execute query to create table if it doesn't already exist
+          my_cursor.execute("""CREATE TABLE IF NOT EXISTS %s (
+          datetime DATETIME,
+          assetname varchar(50),
+          close FLOAT(5),
+          ema12 FLOAT(2),
+          ema26 FLOAT(2),
+          macd FLOAT(7),
+          sigval FLOAT(6),
+          selector varchar(4))
+          """ %(assetName + timeFrame))
+     # Catch any exception and print for debugging
+     except Exception as e:
+          print(f'Error: {e}')
+     # Finally close the cursor to end the function
+     finally:
+          my_cursor.close()
+
+# Function to calculate values and insert data into the table
+# Args
+# asset  -> Given name of the target asset, as a string
+# period -> Given name of the target trading period, as a string
+def calculateAndInsert(asset, period):
+     try:
+          # Install pymysql library as the MYSQL database
+          pymysql.install_as_MySQLdb()
+          # Create the engine using sqlalchemy
+          engine = sqlalchemy.create_engine('mysql://root:dspA123@localhost:3306/stocktables')
+          # Create query string to retrieve given asset, at timeframe, at set periods of 30 in JSON format
+          querystring = {"symbol":asset,"interval":period,"outputsize":"30","format":"json"}
+          # Using Python Requests GET method, make HTTP request to get the response from the API
+          response = requests.request("GET", url, headers=headers, params=querystring)
+          # Convert response to json
+          jsonResponse = response.json()
+          # Use built in Pandas function to normalize the json response into a dataframe
+          df2 = json_normalize(jsonResponse, 'values')
+          # print(tabulate(df2, showindex=False, headers=list(df2.columns)))
+          # Drop unecessary columns
+          df2.drop(['open', 'high', 'low', 'volume'], axis=1, inplace=True)
+          # Change index to datetime to be able to order by date
+          df2.set_index('datetime', inplace=True)
+          # As data from the API comes earliest date first, in order to analyse it, it must be reversed
+          df2 = df2.iloc[::-1]
+          # print(df2.iloc[0])
+          # Loop to find key from value name
+          findKey = ""
+          for key, value in indDict.items():
+               if asset == value:
+                    findKey = key
+          # Set values according to standard MACD settings values by using build in pandas calculations rather than manual calculations for better accuracy and reduction of code
+          df2['assetname'] = findKey
+          df2['EMA12'] = df2.close.ewm(span=12).mean()
+          df2['EMA26'] = df2.close.ewm(span=26).mean()
+          df2['MACD'] = df2.EMA12 - df2.EMA26
+          df2['sigval'] = df2.MACD.ewm(span=9).mean()
+          df2['selector'] = ""
+
+          # Iterate through dataframe rows starting from index 1 (as 0 will have no value)
+          for i in range(1, len(df2)):
+               if df2.MACD.iloc[i] > df2.sigval.iloc[i] and df2.MACD.iloc[i-1] < df2.sigval.iloc[i-1]:
+                    df2.iloc[[i], 6] = 'BUY'
+               elif df2.MACD.iloc[i] < df2.sigval.iloc[i] and df2.MACD.iloc[i-1] > df2.sigval.iloc[i-1]:
+                    df2.iloc[[i], 6] = 'SELL'
+          df2.to_sql((asset.lower()+period), engine, if_exists="append")
+     except Exception as e:
+          print(f'Exception: {e}')
+
+# Display new signals to board
+def displayResults(dfOfSignals):
+     # Enable configuration for displaybox so it can be edited
+     try:
+          displayBox.configure(state="normal")
+          results = dfOfSignals.query('selector == "BUY" or selector == "SELL"')
+          print(tabulate(results, showindex=False, headers=results.columns))
+          for row in results.itertuples():
+               if row[7] == "BUY":
+                    assetName = row[1]
+                    signalDt = row[0]
+                    closePrice = row[2]
+                    inputString = f"""
+                    BUY -> {assetName}\n
+                    Date/Time -> {str(signalDt)}\n
+                    Close Price -> {str(closePrice)}\n
+                    ------------------------------ 
+                    """
+                    displayBox.insert(root.INSERT, inputString)
+                    print(inputString)
+               elif row[7] == "SELL":
+                    assetName = row[1]
+                    signalDt = row[0]
+                    closePrice = row[2]
+                    inputString = f"""
+                    SELL -> {assetName}\n
+                    Date/Time -> {str(signalDt)}\n
+                    Close Price -> {str(closePrice)}\n
+                    ------------------------------ 
+                    """
+                    print(inputString)
+                    displayBox.insert(root.INSERT, inputString)
+          displayBox.configure(state="disabled")
+     except Exception as e:
+          print("DisplayBox error" + e)
+
+def retrieveSignalDates(listOfAssets, timeframe):
+     engine = sqlalchemy.create_engine('mysql://root:dspA123@localhost:3306/stocktables')
+     listOfFrames = []
+     for asset in listOfAssets:
+          query = f'''
+          SELECT *
+          FROM {asset+timeframe}
+          WHERE selector = "BUY" OR selector = "SELL"
+          ORDER BY datetime DESC;'''
+          df = pd.read_sql(query, engine)
+          listOfFrames.append(df)
+     return pd.concat(listOfFrames)
+
+class RepeatedTimer(object):
+     def __init__(self, interval, function, *args, **kwargs):
+          self._timer = None
+          self.interval = interval
+          self.function = function
+          self.args = args
+          self.kwargs = kwargs
+          self.is_running = False
+          self.next_call = time.time()
+          self.start()
+
+     def _run(self):
+          self.is_running = False
+          self.start()
+          self.function(*self.args, **self.kwargs)
+
+     def start(self):
+          if not self.is_running:
+               self.next_call += self.interval
+               self._timer = threading.Timer(self.next_call - time.time(), self._run)
+               self._timer.start()
+               self.is_running = True
+
+     def stop(self):
+          self._timer.cancel()
+          self.is_running = False
 
 
 # Establish Tkinter frame as root, set geometry, and resizable off
@@ -181,75 +263,49 @@ def syncTiming5():
      splitNow = now.split(":")
      # Get minutes and seconds as ints from split list by typecasting
      minutes = int(splitNow[1])
-     seconds = int(float(splitNow[2]))
+     seconds = round(float(splitNow[2]))
      # Check if minutes is already a multiple of 5
      if minutes % 5 == 0:
-          # Check if the minute is close to completion
-          if seconds > 30:
-               # If so, add an extra minute
-               return 6
-          else:
-               # Otherwise return 5
-               return 5
+          return 301
      else:
-          # Else need to find the next multiple of 5
-          # Set counter
-          counter = 0
           min2 = minutes
-          # Loop until min2 is a multiple of 5
+          counter = 0
           while min2 % 5 != 0:
                min2 += 1
-               counter += 1
-          if seconds > 30:
-               counter += 1
-          return counter 
+               counter += 1     
+          actualSeconds = ((counter * 60) - seconds) + 1
+          return(actualSeconds)
 
 def syncTiming30():
      now = str(datetime.now())
      splitNow = now.split(":")
      minutes = int(splitNow[1])
-     seconds = int(float(splitNow[2]))
+     seconds = round(float(splitNow[2]))
      if minutes == 30 or minutes == 0:
-          if seconds > 30:
-               return 31
-          else:
-               return 30
+          return 1801
      else:
-          if minutes > 30:
-               ttw = 60 - minutes
-               if seconds > 30:
-                    ttw += 1
-               return ttw
+          if minutes < 30:
+               diff = 30 - minutes
           else:
-               ttw = 30 - minutes
-               if seconds > 30:
-                    ttw += 1
-               return ttw
+               diff = 59 - minutes
+     actualSeconds = ((diff * 60) - seconds) + 1
+     return(actualSeconds)
 
 def syncTiming60():
      now = str(datetime.now())
      splitNow = now.split(":")
      minutes = int(splitNow[1])
-     seconds = int(float(splitNow[2]))
-     if minutes == 30 or minutes == 0:
-          if minutes == 30:
-               if seconds > 30:
-                    return 61
-               else:
-                    return 60
-          elif minutes == 0:
-               if seconds > 30:
-                    return 31
-               else:
-                    return 30
+     seconds = round(float(splitNow[2]))
+     if minutes == 30:
+          return 3601
      else:
-          if minutes > 30:
-               ttw = (60 - minutes) + 60
-               return ttw
+          if minutes < 30:
+               diff = 30 - minutes
           else:
-               ttw = 30 - minutes
-               return ttw
-
+               diff = 59 - minutes
+     actualSeconds = ((diff * 60) - seconds) + 1
+     return(actualSeconds)
+     
 
 def getData(tf):
      if tf == "5min" :
@@ -264,6 +320,9 @@ def getData(tf):
           for asset in symbolsToGet:
                try:
                     calculateAndInsert(asset, tf)
+                    returnedDf = retrieveSignalDates(symbolsToGet, tf)
+                    displayResults(returnedDf)
+                    # print(tabulate(returnedDf, showindex=False, headers=returnedDf.columns))
                     # print(tabulate(df2, showindex=False, headers=list(df2.columns)))
                except Exception as e:
                     print(f'There has been an error: {e}')
@@ -486,21 +545,22 @@ exitButton.place(x=560, y=570)
 
 displayBox = st.ScrolledText(root, width=25, height=25, font=("Times New Roman", 15))
 displayBox.place(x=300, y=2)
-# displayBox.tag_config('BUY', background="black", foreground="lime")
+displayBox.tag_configure('BUY', background='black', foreground='lime')
+displayBox.tag_configure('SELL', background='black', foreground='red')
+# displayBox.insert(END, "This is blue\n", 'color')
+# displayBox.tag_configure("BUY", background="black", foreground="lime")
+# displayBox.insert("end", "BUY\nsome signal data\n", "BUY")
+
+# displayBox.pack()
 # displayBox.insert('end', "Hello\n", 'BUY')
-# displayBox.insert(tkinter.INSERT, "BUY SIGNAL\n")
 # displayBox.insert(tkinter.INSERT, "BEAN SIGNAL\n")
 # displayBox.delete("1.0","end")
 displayBox.configure(state="disabled")
 
-# def hello(name):
-#      print(f'hello {name}')
 
-# rt = RepeatedTimer(1, hello, "beans") 
-
-fiveMinSyncTime = syncTiming5() * 60
-thirtyMinSyncTime = syncTiming30() *60
-hourSyncTime = syncTiming60() * 60
+fiveMinSyncTime = syncTiming5()
+thirtyMinSyncTime = syncTiming30()
+hourSyncTime = syncTiming60()
 
 print(f'Five mins in: {fiveMinSyncTime} seconds')
 print(f'Thirty mins in: {thirtyMinSyncTime} seconds ')
@@ -510,12 +570,15 @@ _5minThread = RepeatedTimer(fiveMinSyncTime, getData, "5min")
 _30minThread = RepeatedTimer(thirtyMinSyncTime, getData, "30min")
 _1hThread = RepeatedTimer(hourSyncTime, getData, "1hs")
 
-_5minThread.interval = 300
-_30minThread.interval = 1800
-_1hThread.interval = 3600
+_5minThread.interval = 301
+_30minThread.interval = 1801
+_1hThread.interval = 3601
 
+# Begin Tkinter GUI event loop
 root.mainloop()
 
+# Stop timer threads after GUI exection ends
+# Otherwise threads will cause program to continue to run
 _5minThread.stop()
 _30minThread.stop()
 _1hThread.stop()
