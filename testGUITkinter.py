@@ -59,7 +59,7 @@ srtCombo = {
 db = mysql.connector.connect(
     host="localhost",
     user="root",
-    passwd="dspA123"
+    passwd="beansontoastA1?"
 )
 
 # Create cursor
@@ -85,7 +85,7 @@ def createTable(assetName, timeFrame):
           db = mysql.connector.connect(
                host="localhost",
                user="root",
-               passwd="dspA123",
+               passwd="beansontoastA1?",
                database="StockTables"
           )
           # Create cursor
@@ -119,7 +119,7 @@ def calculateAndInsert(asset, period):
           # Install pymysql library as the MYSQL database
           pymysql.install_as_MySQLdb()
           # Create the engine using sqlalchemy
-          engine = sqlalchemy.create_engine('mysql://root:dspA123@localhost:3306/stocktables')
+          engine = sqlalchemy.create_engine('mysql://root:beansontoastA1?@localhost:3306/stocktables')
           # Create query string to retrieve given asset, at timeframe, at set periods of 30 in JSON format
           querystring = {"symbol":asset,"interval":period,"outputsize":"30","format":"json"}
           # Using Python Requests GET method, make HTTP request to get the response from the API
@@ -164,41 +164,36 @@ def displayResults(dfOfSignals):
      # Enable configuration for displaybox so it can be edited
      try:
           results = dfOfSignals.query('selector == "BUY" or selector == "SELL"')
-          print(tabulate(results, showindex=False, headers=results.columns))
-          for row in results.itertuples():
-               if row[8] == "BUY":
-                    displayBox.configure(state="normal")
-                    # assetName = row[2]
-                    # signalDt = row[1]
-                    # closePrice = row[3]
-                    assetInputString = f'BUY -> {assetName}\n'
-                    displayBox.insert('end', assetInputString, 'BUY')
-                    inputString = f"""
-                    Date/Time -> {str(signalDt)}\n
-                    Close Price -> {str(closePrice)}\n
-                    ------------------------------ 
-                    """
-                    displayBox.insert('end', inputString)
-                    print(inputString)
-               elif row[8] == "SELL":
-                    assetName = row[2]
-                    signalDt = row[1]
-                    closePrice = row[3]
-                    assetInputString = f'SELL -> {assetName}\n'
-                    displayBox.insert('end', assetInputString, 'SELL')
-                    inputString = f"""
-                    Date/Time -> {str(signalDt)}\n
-                    Close Price -> {str(closePrice)}\n
-                    ------------------------------ 
-                    """
-                    print(inputString)
-                    displayBox.insert('end', inputString)
-          displayBox.configure(state="disabled")
+          if not results.empty:               
+               print(tabulate(results, showindex=False, headers=results.columns))
+               for row in results.itertuples():
+                    if row[8] == "BUY":
+                         displayBox.configure(state="normal")
+                         assetName = row[2]
+                         signalDt = row[1]
+                         closePrice = row[3]
+                         assetInputString = f'BUY -> {assetName}\n'
+                         displayBox.insert('end', assetInputString, 'BUY')
+                         inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {str(closePrice)}\n------------------------------"""
+                         displayBox.insert('end', inputString)
+                         print(inputString)
+                    elif row[8] == "SELL":
+                         displayBox.configure(state="normal")
+                         assetName = row[2]
+                         signalDt = row[1]
+                         closePrice = row[3]
+                         assetInputString = f'SELL: {assetName}\n'
+                         displayBox.insert('end', assetInputString, 'SELL')
+                         inputString = f"""Date/Time -> {str(signalDt)}\n Close Price -> {str(closePrice)}\n------------------------------"""
+                         displayBox.insert('end', inputString)
+                         print(inputString)
+               displayBox.configure(state="disabled")
      except Exception as e:
           print("DisplayBox error" + e)
+          
 
 def retrieveSignalDates(listOfAssets, timeframe):
-     engine = sqlalchemy.create_engine('mysql://root:dspA123@localhost:3306/stocktables')
+     engine = sqlalchemy.create_engine('mysql://root:beansontoastA1?@localhost:3306/stocktables')
      listOfFrames = []
      for asset in listOfAssets:
           query = f'''
@@ -545,7 +540,7 @@ exitButton.place(x=560, y=570)
 
 ########################################################
 
-displayBox = st.ScrolledText(root, width=25, height=24, font=("Arial", 15))
+displayBox = st.ScrolledText(root, width=25, height=24, font=("Calibri", 15))
 displayBox.place(x=300, y=2)
 displayBox.tag_configure('BUY', background='black', foreground='lime')
 displayBox.tag_configure('SELL', background='black', foreground='red')
