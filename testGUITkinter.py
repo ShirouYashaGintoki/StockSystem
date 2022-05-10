@@ -59,7 +59,7 @@ srtCombo = {
 db = mysql.connector.connect(
     host="localhost",
     user="root",
-    passwd="beansontoastA1?"
+    passwd="dspA123"
 )
 
 # Create cursor
@@ -85,7 +85,7 @@ def createTable(assetName, timeFrame):
           db = mysql.connector.connect(
                host="localhost",
                user="root",
-               passwd="beansontoastA1?",
+               passwd="dspA123",
                database="StockTables"
           )
           # Create cursor
@@ -119,7 +119,7 @@ def calculateAndInsert(asset, period):
           # Install pymysql library as the MYSQL database
           pymysql.install_as_MySQLdb()
           # Create the engine using sqlalchemy
-          engine = sqlalchemy.create_engine('mysql://root:beansontoastA1?@localhost:3306/stocktables')
+          engine = sqlalchemy.create_engine('mysql://root:dspA123@localhost:3306/stocktables')
           # Create query string to retrieve given asset, at timeframe, at set periods of 30 in JSON format
           querystring = {"symbol":asset,"interval":period,"outputsize":"30","format":"json"}
           # Using Python Requests GET method, make HTTP request to get the response from the API
@@ -168,9 +168,9 @@ def displayResults(dfOfSignals):
           for row in results.itertuples():
                if row[8] == "BUY":
                     displayBox.configure(state="normal")
-                    assetName = row[2]
-                    signalDt = row[1]
-                    closePrice = row[3]
+                    # assetName = row[2]
+                    # signalDt = row[1]
+                    # closePrice = row[3]
                     assetInputString = f'BUY -> {assetName}\n'
                     displayBox.insert('end', assetInputString, 'BUY')
                     inputString = f"""
@@ -198,7 +198,7 @@ def displayResults(dfOfSignals):
           print("DisplayBox error" + e)
 
 def retrieveSignalDates(listOfAssets, timeframe):
-     engine = sqlalchemy.create_engine('mysql://root:beansontoastA1?@localhost:3306/stocktables')
+     engine = sqlalchemy.create_engine('mysql://root:dspA123@localhost:3306/stocktables')
      listOfFrames = []
      for asset in listOfAssets:
           query = f'''
@@ -415,6 +415,7 @@ srtCombo["clicked1"][2] = timeFrame1.get()
 srtCombo["clicked1"][4] = clicked1.get()
 srtCombo["clicked1"][5] = timeFrame1.get()
 clicked1.trace_add("write", lambda var_name, var_index, operation: callback1(clicked1, timeFrame1, "clicked1"))
+# clicked1.trace_add("write", lambda var_name, var_index, operation: callback1(clicked1, timeFrame1, "clicked1"))
 timeFrame1.trace_add("write", lambda var_name, var_index, operation: callback2(clicked1, timeFrame1, "clicked1"))
 
 #####################################
@@ -464,7 +465,7 @@ srtCombo["clicked5"][0] = clicked5.get()
 srtCombo["clicked5"][2] = timeFrame5.get()
 srtCombo["clicked5"][4] = clicked5.get()
 srtCombo["clicked5"][5] = timeFrame5.get()
-clicked5.trace_add("write", lambda var_name, var_index, operation: callback1(clicked5, timeFrame5, "clicked5"))
+clicked5.trace_add("write", lambda : callback1(clicked5, timeFrame5, "clicked5"))
 timeFrame5.trace_add("write", lambda var_name, var_index, operation: callback2(clicked5, timeFrame5, "clicked5"))
 #####################################
 stockNameList
