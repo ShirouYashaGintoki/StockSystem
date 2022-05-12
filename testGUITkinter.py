@@ -12,7 +12,6 @@ import mysql.connector
 import sqlalchemy
 import pymysql
 
-
 # URL for API
 url = "https://twelve-data1.p.rapidapi.com/time_series"
 
@@ -164,6 +163,7 @@ def displayResults(dfOfSignals):
      # Enable configuration for displaybox so it can be edited
      try:
           results = dfOfSignals.query('selector == "BUY" or selector == "SELL"')
+          results = results.sort_values(by=['datetime'])
           if not results.empty:               
                print(tabulate(results, showindex=False, headers=results.columns))
                for row in results.itertuples():
