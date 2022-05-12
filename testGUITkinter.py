@@ -52,6 +52,8 @@ srtCombo = {
      "clicked5" : ['', '', '', '', '', '']
 }
 
+
+
 # beansontoastA1? for PC
 # dspA123 for laptop
 # Establish connection using mysql connector
@@ -154,7 +156,7 @@ def calculateAndInsert(asset, period):
                     df2.iloc[[i], 6] = 'BUY'
                elif df2.MACD.iloc[i] < df2.sigval.iloc[i] and df2.MACD.iloc[i-1] > df2.sigval.iloc[i-1]:
                     df2.iloc[[i], 6] = 'SELL'
-          df2.to_sql((asset.lower()+period), engine, if_exists="append")
+          df2.to_sql((asset.lower()+period), engine, if_exists="replace")
      except Exception as e:
           print(f'Exception: {e}')
 
