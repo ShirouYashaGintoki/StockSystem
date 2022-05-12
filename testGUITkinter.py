@@ -172,9 +172,9 @@ def displayResults(dfOfSignals):
                          assetName = row[2]
                          signalDt = row[1]
                          closePrice = row[3]
-                         assetInputString = f'BUY -> {assetName}\n'
+                         assetInputString = f'BUY: {assetName}\n'
                          displayBox.insert('end', assetInputString, 'BUY')
-                         inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {str(closePrice)}\n------------------------------"""
+                         inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {str(closePrice)}\n------------------------------\n"""
                          displayBox.insert('end', inputString)
                          print(inputString)
                     elif row[8] == "SELL":
@@ -184,10 +184,13 @@ def displayResults(dfOfSignals):
                          closePrice = row[3]
                          assetInputString = f'SELL: {assetName}\n'
                          displayBox.insert('end', assetInputString, 'SELL')
-                         inputString = f"""Date/Time -> {str(signalDt)}\n Close Price -> {str(closePrice)}\n------------------------------"""
+                         inputString = f"""Date/Time -> {str(signalDt)}\nClose Price: {str(closePrice)}\n------------------------------\n"""
                          displayBox.insert('end', inputString)
                          print(inputString)
                displayBox.configure(state="disabled")
+          else:
+               assetName = row[2]
+               print(f'Nothing available in {assetName}')
      except Exception as e:
           print("DisplayBox error" + e)
           
@@ -410,7 +413,6 @@ srtCombo["clicked1"][2] = timeFrame1.get()
 srtCombo["clicked1"][4] = clicked1.get()
 srtCombo["clicked1"][5] = timeFrame1.get()
 clicked1.trace_add("write", lambda var_name, var_index, operation: callback1(clicked1, timeFrame1, "clicked1"))
-# clicked1.trace_add("write", lambda var_name, var_index, operation: callback1(clicked1, timeFrame1, "clicked1"))
 timeFrame1.trace_add("write", lambda var_name, var_index, operation: callback2(clicked1, timeFrame1, "clicked1"))
 
 #####################################
@@ -540,7 +542,7 @@ exitButton.place(x=560, y=570)
 
 ########################################################
 
-displayBox = st.ScrolledText(root, width=25, height=24, font=("Calibri", 15))
+displayBox = st.ScrolledText(root, width=29, height=23, font=("Calibri", 15))
 displayBox.place(x=300, y=2)
 displayBox.tag_configure('BUY', background='black', foreground='lime')
 displayBox.tag_configure('SELL', background='black', foreground='red')
