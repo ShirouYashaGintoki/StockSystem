@@ -75,6 +75,9 @@ except Exception:
 # Close database connection now
 db.close()
 
+# Dataframe to hold the records of the current signals to prevent duplicate signals
+currentSignals = pd.DataFrame(columns=["datetime", "assetname", "close", "signal"])
+
 # Function to create a table in the database
 # for a given asset and timeframe combination
 # Args
