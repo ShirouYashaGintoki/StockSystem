@@ -11,6 +11,7 @@ from tabulate import tabulate
 import mysql.connector
 import sqlalchemy
 import pymysql
+import traceback
 
 # URL for API
 url = "https://twelve-data1.p.rapidapi.com/time_series"
@@ -98,6 +99,7 @@ def createTable(assetName, timeFrame):
           print(timeFrame)
           # Execute query to create table if it doesn't already exist
           my_cursor.execute("""CREATE TABLE IF NOT EXISTS %s (
+          rowid INT AUTO_INCREMENT PRIMARY KEY,
           datetime DATETIME,
           assetname varchar(50),
           close FLOAT(5),
@@ -159,9 +161,10 @@ def calculateAndInsert(asset, period):
                     df2.iloc[[i], 6] = 'BUY'
                elif df2.MACD.iloc[i] < df2.sigval.iloc[i] and df2.MACD.iloc[i-1] > df2.sigval.iloc[i-1]:
                     df2.iloc[[i], 6] = 'SELL'
-          df2.to_sql((asset.lower()+period), engine, if_exists="replace")
+          df2.to_sql((asset.lower()+period), engine, if_exists="append")
      except Exception as e:
           print(f'Exception: {e}')
+          print(traceback.format_exc())
 
 # Display new signals to board
 def displayResults(dfOfSignals):
@@ -331,6 +334,7 @@ def getData(tf):
                     # print(tabulate(df2, showindex=False, headers=list(df2.columns)))
                except Exception as e:
                     print(f'There has been an error: {e}')
+                    print(traceback.format_exc())
      if tf == "30MIN":
           print("30MIN interval reached")
      if tf == "1HOUR":
