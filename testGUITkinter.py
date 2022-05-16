@@ -116,6 +116,7 @@ def createTable(assetName, timeFrame):
      finally:
           my_cursor.close()
 
+
 # Function to calculate values and insert data into the table
 # Args
 # asset  -> Given name of the target asset, as a string
@@ -162,6 +163,35 @@ def calculateAndInsert(asset, period):
                elif df2.MACD.iloc[i] < df2.sigval.iloc[i] and df2.MACD.iloc[i-1] > df2.sigval.iloc[i-1]:
                     df2.iloc[[i], 6] = 'SELL'
           df2.to_sql((asset.lower()+period), engine, if_exists="append")
+          try:
+               db = mysql.connector.connect(
+                    host="localhost",
+                    user="root",
+                    passwd="beansontoastA1?",
+                    database="StockTables"
+               )
+               # Create cursor
+               my_cursor = db.cursor()
+
+               print(timeFrame)
+               # Execute query to create table if it doesn't already exist
+               my_cursor.execute("""CREATE TABLE IF NOT EXISTS %s (
+               rowid INT AUTO_INCREMENT PRIMARY KEY,
+               datetime DATETIME,
+               assetname varchar(50),
+               close FLOAT(5),
+               ema12 FLOAT(2),
+               ema26 FLOAT(2),
+               macd FLOAT(7),
+               sigval FLOAT(6),
+               selector varchar(4))
+               """ %(assetName + timeFrame))
+          # Catch any exception and print for debugging
+          except Exception as e:
+               print(f'Error: {e}')
+          # Finally close the cursor to end the function
+          finally:
+               my_cursor.close()
      except Exception as e:
           print(f'Exception: {e}')
           print(traceback.format_exc())
