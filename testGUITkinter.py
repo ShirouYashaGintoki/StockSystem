@@ -174,20 +174,19 @@ def calculateAndInsert(asset, period):
                # Create cursor
                my_cursor = db.cursor()
 
-               print("Removing duplicates if any exist from stocktables."+asset+period)
+               print("Removing duplicates if any exist from stocktables."+(asset+period).lower())
 
                # Execute query to create table if it doesn't already exist
-               my_cursor.execute("""DELETE FROM stocktables.%s
-               WHERE rowid NOT IN (
-               SELECT * FROM (SELECT Max(rowid) 
-               FROM %s GROUP BY datetime, assetname, close, selector) AS t);   
-               """ %(asset+period, asset+period))
+               my_cursor.execute("""DELETE FROM stocktables.%s WHERE rowid NOT IN (SELECT * FROM (SELECT Max(rowid) FROM %s GROUP BY datetime, assetname, close, selector) AS t);""" %((asset+period).lower(), (asset+period).lower()))
+
+               db.commit()
           # Catch any exception and print for debugging
           except Exception as e:
                print(f'Exception inside delete duplicates: {e}')
           # Finally close the cursor to end the function
           finally:
                my_cursor.close()
+               db.close()
      except Exception as e:
           print(f'Exception in calculate and insert: {e}')
           print(traceback.format_exc())
@@ -197,25 +196,26 @@ def displayResults(dfOfSignals):
      # Enable configuration for displaybox so it can be edited
      try:
           results = dfOfSignals.query('selector == "BUY" or selector == "SELL"')
+          results = results.drop_duplicates(keep='first')
           results = results.sort_values(by=['datetime'])
-          if not results.empty:               
+          if not results.empty:
                print(tabulate(results, showindex=False, headers=results.columns))
                for row in results.itertuples():
-                    if row[8] == "BUY":
+                    if row[9] == "BUY":
                          displayBox.configure(state="normal")
-                         assetName = row[2]
-                         signalDt = row[1]
-                         closePrice = row[3]
+                         assetName = row[3]
+                         signalDt = row[2]
+                         closePrice = row[4]
                          assetInputString = f'BUY: {assetName}\n'
                          displayBox.insert('end', assetInputString, 'BUY')
                          inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {str(closePrice)}\n------------------------------\n"""
                          displayBox.insert('end', inputString)
                          print(inputString)
-                    elif row[8] == "SELL":
+                    elif row[9] == "SELL":
                          displayBox.configure(state="normal")
-                         assetName = row[2]
-                         signalDt = row[1]
-                         closePrice = row[3]
+                         assetName = row[3]
+                         signalDt = row[2]
+                         closePrice = row[4]
                          assetInputString = f'SELL: {assetName}\n'
                          displayBox.insert('end', assetInputString, 'SELL')
                          inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {str(closePrice)}\n------------------------------\n"""
