@@ -26,7 +26,6 @@ headers = {
 indices = pd.read_excel('tickers2.xlsx', sheet_name='Sheet 1')
 # Create a dictionary of stock names and their ticker symbols
 indDict = pd.Series(indices.Symbol.values, index=indices.CompanyName).to_dict()
-print(indDict)
 # Create a list of stock names for display purposes
 stockNameList = sorted(list(indDict.keys()))
 # print(f'{stockNameList}')
@@ -175,14 +174,14 @@ def calculateAndInsert(asset, period):
                # Create cursor
                my_cursor = db.cursor()
 
-               print("Removing duplicates if any exist")
+               print("Removing duplicates if any exist from stocktables."+asset+period)
 
                # Execute query to create table if it doesn't already exist
                my_cursor.execute("""DELETE FROM stocktables.%s
                WHERE rowid NOT IN (
                SELECT * FROM (SELECT Max(rowid) 
                FROM %s GROUP BY datetime, assetname, close, selector) AS t);   
-               """ %(asset))
+               """ %(asset+period, asset+period))
           # Catch any exception and print for debugging
           except Exception as e:
                print(f'Exception inside delete duplicates: {e}')
@@ -219,7 +218,7 @@ def displayResults(dfOfSignals):
                          closePrice = row[3]
                          assetInputString = f'SELL: {assetName}\n'
                          displayBox.insert('end', assetInputString, 'SELL')
-                         inputString = f"""Date/Time -> {str(signalDt)}\nClose Price: {str(closePrice)}\n------------------------------\n"""
+                         inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {str(closePrice)}\n------------------------------\n"""
                          displayBox.insert('end', inputString)
                          print(inputString)
                displayBox.configure(state="disabled")
