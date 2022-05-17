@@ -26,6 +26,7 @@ headers = {
 indices = pd.read_excel('tickers2.xlsx', sheet_name='Sheet 1')
 # Create a dictionary of stock names and their ticker symbols
 indDict = pd.Series(indices.Symbol.values, index=indices.CompanyName).to_dict()
+print(indDict)
 # Create a list of stock names for display purposes
 stockNameList = sorted(list(indDict.keys()))
 # print(f'{stockNameList}')
@@ -163,6 +164,7 @@ def calculateAndInsert(asset, period):
                elif df2.MACD.iloc[i] < df2.sigval.iloc[i] and df2.MACD.iloc[i-1] > df2.sigval.iloc[i-1]:
                     df2.iloc[[i], 6] = 'SELL'
           df2.to_sql((asset.lower()+period), engine, if_exists="append")
+          # Try to remove any duplicates from the table (For some reason replace wont work)
           try:
                db = mysql.connector.connect(
                     host="localhost",
@@ -173,27 +175,22 @@ def calculateAndInsert(asset, period):
                # Create cursor
                my_cursor = db.cursor()
 
-               print(timeFrame)
+               print("Removing duplicates if any exist")
+
                # Execute query to create table if it doesn't already exist
-               my_cursor.execute("""CREATE TABLE IF NOT EXISTS %s (
-               rowid INT AUTO_INCREMENT PRIMARY KEY,
-               datetime DATETIME,
-               assetname varchar(50),
-               close FLOAT(5),
-               ema12 FLOAT(2),
-               ema26 FLOAT(2),
-               macd FLOAT(7),
-               sigval FLOAT(6),
-               selector varchar(4))
-               """ %(assetName + timeFrame))
+               my_cursor.execute("""DELETE FROM stocktables.%s
+               WHERE rowid NOT IN (
+               SELECT * FROM (SELECT Max(rowid) 
+               FROM %s GROUP BY datetime, assetname, close, selector) AS t);   
+               """ %(asset))
           # Catch any exception and print for debugging
           except Exception as e:
-               print(f'Error: {e}')
+               print(f'Exception inside delete duplicates: {e}')
           # Finally close the cursor to end the function
           finally:
                my_cursor.close()
      except Exception as e:
-          print(f'Exception: {e}')
+          print(f'Exception in calculate and insert: {e}')
           print(traceback.format_exc())
 
 # Display new signals to board
