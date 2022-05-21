@@ -77,7 +77,7 @@ except Exception:
 db.close()
 
 # Dataframe to hold the records of the current signals to prevent duplicate signals
-currentSignals = pd.DataFrame(columns=["rowid", "datetime", "assetname", "close", "ema12", "ema26", "macd", "sigval" "selector"])
+currentSignals = pd.DataFrame(columns=["rowid", "datetime", "assetname", "close", "ema12", "ema26", "macd", "sigval", "selector"])
 
 # Function to create a table in the database
 # for a given asset and timeframe combination
@@ -196,12 +196,14 @@ def displayResults(dfOfSignals):
      # Enable configuration for displaybox so it can be edited
      try:
           results = dfOfSignals.query('selector == "BUY" or selector == "SELL"')
+          print(tabulate(results, showindex=False, headers=results.columns))
           # results = results.drop_duplicates(keep='first')
           global currentSignals
+          print(tabulate(currentSignals, showindex=False, headers=results.columns))
           # Below line shifts table values to the left resuling in errors
           results = results[~results.apply(tuple,1).isin(currentSignals.apply(tuple,1))]
-          # results = results.merge(currentSignals, indicator=True, how='outer')
-          # results = results[results['_merge'] == 'left_only']
+          # if results[9] != "BUY" or results[9] != "SELL":
+          #      results.shift(1, axis=1)
           print(tabulate(results, showindex=False, headers=results.columns))
           print(tabulate(currentSignals, showindex=False, headers=results.columns))
           currentSignals = pd.concat([results, currentSignals], ignore_index=True)
@@ -231,8 +233,7 @@ def displayResults(dfOfSignals):
                          print(inputString)
                displayBox.configure(state="disabled")
           else:
-               assetName = row[2]
-               print(f'Nothing available in {assetName}')
+               print("Nothing available")
      except Exception as e:
           print("DisplayBox error" + e)
           
