@@ -196,17 +196,21 @@ def displayResults(dfOfSignals):
      # Enable configuration for displaybox so it can be edited
      try:
           results = dfOfSignals.query('selector == "BUY" or selector == "SELL"')
+          print("Initial results")
           print(tabulate(results, showindex=False, headers=results.columns))
           # results = results.drop_duplicates(keep='first')
           global currentSignals
+          print("Current Signals dataframe")
           print(tabulate(currentSignals, showindex=False, headers=results.columns))
           # Below line shifts table values to the left resuling in errors
           results = results[~results.apply(tuple,1).isin(currentSignals.apply(tuple,1))]
           # if results[9] != "BUY" or results[9] != "SELL":
           #      results.shift(1, axis=1)
+          print("Results after filter attempt")
           print(tabulate(results, showindex=False, headers=results.columns))
-          print(tabulate(currentSignals, showindex=False, headers=results.columns))
           currentSignals = pd.concat([results, currentSignals], ignore_index=True)
+          print("Current signals after adding results")
+          print(tabulate(currentSignals, showindex=False, headers=results.columns))
           results = results.sort_values(by=['datetime'])
           if not results.empty:
                print(tabulate(results, showindex=False, headers=results.columns))
