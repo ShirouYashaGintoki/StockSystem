@@ -77,7 +77,7 @@ except Exception:
 db.close()
 
 # Dataframe to hold the records of the current signals to prevent duplicate signals
-currentSignals = pd.DataFrame(columns=["rowid", "datetime", "assetname", "close", "ema12", "ema26", "macd", "sigval", "selector"])
+currentSignals = pd.DataFrame(columns=["datetime", "assetname", "close", "ema12", "ema26", "macd", "sigval", "selector"])
 
 # Function to create a table in the database
 # for a given asset and timeframe combination
@@ -196,6 +196,7 @@ def displayResults(dfOfSignals):
      # Enable configuration for displaybox so it can be edited
      try:
           results = dfOfSignals.query('selector == "BUY" or selector == "SELL"')
+          results = results.drop(['rowid'], axis=1, errors='ignore')
           print("Initial results")
           print(tabulate(results, showindex=False, headers=results.columns))
           # results = results.drop_duplicates(keep='first')
@@ -215,21 +216,21 @@ def displayResults(dfOfSignals):
           if not results.empty:
                print(tabulate(results, showindex=False, headers=results.columns))
                for row in results.itertuples():
-                    if row[9] == "BUY":
+                    if row[8] == "BUY":
                          displayBox.configure(state="normal")
-                         assetName = row[3]
-                         signalDt = row[2]
-                         closePrice = row[4]
+                         assetName = row[2]
+                         signalDt = row[1]
+                         closePrice = row[3]
                          assetInputString = f'BUY: {assetName}\n'
                          displayBox.insert('end', assetInputString, 'BUY')
                          inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {str(closePrice)}\n------------------------------\n"""
                          displayBox.insert('end', inputString)
                          print(inputString)
-                    elif row[9] == "SELL":
+                    elif row[8] == "SELL":
                          displayBox.configure(state="normal")
-                         assetName = row[3]
-                         signalDt = row[2]
-                         closePrice = row[4]
+                         assetName = row[2]
+                         signalDt = row[1]
+                         closePrice = row[3]
                          assetInputString = f'SELL: {assetName}\n'
                          displayBox.insert('end', assetInputString, 'SELL')
                          inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {str(closePrice)}\n------------------------------\n"""
