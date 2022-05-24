@@ -77,7 +77,7 @@ except Exception:
 db.close()
 
 # Dataframe to hold the records of the current signals to prevent duplicate signals
-currentSignals = pd.DataFrame(columns=["datetime", "assetname", "close", "signal"])
+currentSignals = pd.DataFrame(columns=["datetime", "assetname", "close", "ema12", "ema26", "macd", "sigval", "selector"])
 
 # Function to create a table in the database
 # for a given asset and timeframe combination
@@ -196,26 +196,41 @@ def displayResults(dfOfSignals):
      # Enable configuration for displaybox so it can be edited
      try:
           results = dfOfSignals.query('selector == "BUY" or selector == "SELL"')
-          results = results.drop_duplicates(keep='first')
+          results = results.drop(['rowid'], axis=1, errors='ignore')
+          print("Initial results")
+          print(tabulate(results, showindex=False, headers=results.columns))
+          # results = results.drop_duplicates(keep='first')
+          global currentSignals
+          print("Current Signals dataframe")
+          print(tabulate(currentSignals, showindex=False, headers=results.columns))
+          # Below line shifts table values to the left resuling in errors
+          results = results[~results.apply(tuple,1).isin(currentSignals.apply(tuple,1))]
+          # if results[9] != "BUY" or results[9] != "SELL":
+          #      results.shift(1, axis=1)
+          print("Results after filter attempt")
+          print(tabulate(results, showindex=False, headers=results.columns))
+          currentSignals = pd.concat([results, currentSignals], ignore_index=True)
+          print("Current signals after adding results")
+          print(tabulate(currentSignals, showindex=False, headers=results.columns))
           results = results.sort_values(by=['datetime'])
           if not results.empty:
                print(tabulate(results, showindex=False, headers=results.columns))
                for row in results.itertuples():
-                    if row[9] == "BUY":
+                    if row[8] == "BUY":
                          displayBox.configure(state="normal")
-                         assetName = row[3]
-                         signalDt = row[2]
-                         closePrice = row[4]
+                         assetName = row[2]
+                         signalDt = row[1]
+                         closePrice = row[3]
                          assetInputString = f'BUY: {assetName}\n'
                          displayBox.insert('end', assetInputString, 'BUY')
                          inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {str(closePrice)}\n------------------------------\n"""
                          displayBox.insert('end', inputString)
                          print(inputString)
-                    elif row[9] == "SELL":
+                    elif row[8] == "SELL":
                          displayBox.configure(state="normal")
-                         assetName = row[3]
-                         signalDt = row[2]
-                         closePrice = row[4]
+                         assetName = row[2]
+                         signalDt = row[1]
+                         closePrice = row[3]
                          assetInputString = f'SELL: {assetName}\n'
                          displayBox.insert('end', assetInputString, 'SELL')
                          inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {str(closePrice)}\n------------------------------\n"""
@@ -223,8 +238,7 @@ def displayResults(dfOfSignals):
                          print(inputString)
                displayBox.configure(state="disabled")
           else:
-               assetName = row[2]
-               print(f'Nothing available in {assetName}')
+               print("Nothing available")
      except Exception as e:
           print("DisplayBox error" + e)
           

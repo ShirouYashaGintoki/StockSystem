@@ -1,0 +1,33 @@
+DB schema already exists
+Five mins in: 189 seconds
+Thirty mins in: 189 seconds 
+One hour in: 189 seconds    
+drop variable has been changed to 1HOUR
+['ADVANCED MICRO DEVICES', '1HOUR']
+drop variable has been changed to 1HOUR
+['ADOBE', '1HOUR']
+drop variable has been changed to 1HOUR
+['ACCENTURE PLC.', '1HOUR']
+
+5min
+Removing duplicates if any exist from stocktables.amzn5min
+  rowid  datetime             assetname      close    ema12    ema26        macd      sigval  selector
+-------  -------------------  -----------  -------  -------  -------  ----------  ----------  ----------
+     47  2022-05-20 14:50:00  AMAZON.COM   2118.89  2111.74  2112.39  -0.651457   -1.13005    BUY
+     37  2022-05-20 14:00:00  AMAZON.COM   2116.15  2119.12  2119.07   0.0516654   0.0869034  SELL
+     33  2022-05-20 13:40:00  AMAZON.COM   2118.12  2117.4   2117.47  -0.0704393  -0.0838179  BUY
+  rowid  datetime             assetname      close    ema12    ema26        macd      sigval  selector
+-------  -------------------  -----------  -------  -------  -------  ----------  ----------  ----------
+     17  2022-05-20 14:50:00  AMAZON.COM   2118.89  2111.74  2112.39  -0.651457   -1.13005    BUY
+      7  2022-05-20 14:00:00  AMAZON.COM   2116.15  2119.12  2119.07   0.0516654   0.0869034  SELL
+      3  2022-05-20 13:40:00  AMAZON.COM   2118.12  2117.4   2117.47  -0.0704393  -0.0838179  BUY
+  rowid  datetime             assetname      close    ema12    ema26        macd      sigval  selector
+-------  -------------------  -----------  -------  -------  -------  ----------  ----------  ----------
+     47  2022-05-20 14:50:00  AMAZON.COM   2118.89  2111.74  2112.39  -0.651457   -1.13005    BUY
+     37  2022-05-20 14:00:00  AMAZON.COM   2116.15  2119.12  2119.07   0.0516654   0.0869034  SELL
+     33  2022-05-20 13:40:00  AMAZON.COM   2118.12  2117.4   2117.47  -0.0704393  -0.0838179  BUY
+  rowid  datetime             assetname      close    ema12    ema26        macd      sigval  selector
+-------  -------------------  -----------  -------  -------  -------  ----------  ----------  ----------
+     17  2022-05-20 14:50:00  AMAZON.COM   2118.89  2111.74  2112.39  -0.651457   -1.13005    BUY
+      7  2022-05-20 14:00:00  AMAZON.COM   2116.15  2119.12  2119.07   0.0516654   0.0869034  SELL
+      3  2022-05-20 13:40:00  AMAZON.COM   2118.12  2117.4   2117.47  -0.0704393  -0.0838179  BUY
