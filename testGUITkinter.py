@@ -176,31 +176,37 @@ def calculateAndInsert(asset, period):
 
                print("Removing duplicates if any exist from stocktables."+(asset+period).lower())
 
-               # Execute query to create table if it doesn't already exist
+               # Execute query to delete duplicate records from the given table
                my_cursor.execute("""DELETE FROM stocktables.%s WHERE rowid NOT IN (SELECT * FROM (SELECT Max(rowid) FROM %s GROUP BY datetime, assetname, close, selector) AS t);""" %((asset+period).lower(), (asset+period).lower()))
 
+               # Commit changes to db
                db.commit()
           # Catch any exception and print for debugging
           except Exception as e:
                print(f'Exception inside delete duplicates: {e}')
-          # Finally close the cursor to end the function
+          # Finally close the cursor and db to end function
           finally:
                my_cursor.close()
                db.close()
+     # Catch any exceptions and print the traceback
      except Exception as e:
           print(f'Exception in calculate and insert: {e}')
           print(traceback.format_exc())
 
 # Display new signals to board
 def displayResults(dfOfSignals):
-     # Enable configuration for displaybox so it can be edited
      try:
+          # Query dataframe argument to select only signal records
           results = dfOfSignals.query('selector == "BUY" or selector == "SELL"')
+          # Drop the rowid to compare with currentSignals
           results = results.drop(['rowid'], axis=1, errors='ignore')
+          # Print results for checking
           print("Initial results")
           print(tabulate(results, showindex=False, headers=results.columns))
           # results = results.drop_duplicates(keep='first')
+          # Make currentSignals global to allow it to be accessed as local in the function
           global currentSignals
+          # Print 
           print("Current Signals dataframe")
           print(tabulate(currentSignals, showindex=False, headers=results.columns))
           # Below line shifts table values to the left resuling in errors
