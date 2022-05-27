@@ -5,7 +5,7 @@ import pandas as pd
 from pandas import json_normalize
 import threading
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 from tabulate import tabulate
 import mysql.connector
@@ -219,13 +219,14 @@ def displayResults(dfOfSignals):
           print("Current signals after adding results")
           print(tabulate(currentSignals, showindex=False, headers=results.columns))
           results = results.sort_values(by=['datetime'])
+          time_delta = timedelta(hours=5)
           if not results.empty:
                print(tabulate(results, showindex=False, headers=results.columns))
                for row in results.itertuples():
                     if row[8] == "BUY":
                          displayBox.configure(state="normal")
                          assetName = row[2]
-                         signalDt = row[1]
+                         signalDt = row[1] + time_delta
                          closePrice = row[3]
                          assetInputString = f'BUY: {assetName}\n'
                          displayBox.insert('end', assetInputString, 'BUY')
@@ -235,7 +236,7 @@ def displayResults(dfOfSignals):
                     elif row[8] == "SELL":
                          displayBox.configure(state="normal")
                          assetName = row[2]
-                         signalDt = row[1]
+                         signalDt = row[1]+ time_delta
                          closePrice = row[3]
                          assetInputString = f'SELL: {assetName}\n'
                          displayBox.insert('end', assetInputString, 'SELL')
