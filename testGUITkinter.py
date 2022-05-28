@@ -236,7 +236,7 @@ def displayResults(dfOfSignals):
                     elif row[8] == "SELL":
                          displayBox.configure(state="normal")
                          assetName = row[2]
-                         signalDt = row[1]+ time_delta
+                         signalDt = row[1] + time_delta
                          closePrice = row[3]
                          assetInputString = f'SELL: {assetName}\n'
                          displayBox.insert('end', assetInputString, 'SELL')
