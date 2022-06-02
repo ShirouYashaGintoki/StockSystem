@@ -131,13 +131,14 @@ def calculateAndInsert(asset, period):
           # Create the engine using sqlalchemy
           engine = sqlalchemy.create_engine('mysql://root:beansontoastA1?@localhost:3306/stocktables')
           # Create query string to retrieve given asset, at timeframe, at set periods of 30 in JSON format
-          querystring = {"symbol":asset,"interval":period,"outputsize":"30","format":"json"}
+          querystring = {"symbol":"AAPL","interval":period,"diffandsplits":"false"}
           # Using Python Requests GET method, make HTTP request to get the response from the API
           response = requests.request("GET", url, headers=headers, params=querystring)
           # Convert response to json
           jsonResponse = response.json()
           # Use built in Pandas function to normalize the json response into a dataframe
-          df2 = json_normalize(jsonResponse, 'values')
+          items = jsonResponse['items']
+          items = dict(reversed(list(items.items())))
           # print(tabulate(df2, showindex=False, headers=list(df2.columns)))
           # Drop unecessary columns
           df2.drop(['open', 'high', 'low', 'volume'], axis=1, inplace=True)
