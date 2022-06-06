@@ -23,7 +23,7 @@ response = requests.request("GET", url, headers=headers, params=querystring)
 jsonResponse = response.json()
 items = jsonResponse['items']
 items = dict(reversed(list(items.items())))
-from_zone = tz.gettz('UTC')
+from_zone = tz.gettz('America/New_York')
 to_zone = tz.gettz('Europe/London')
 count = 0
 #Europe/London

@@ -19,6 +19,9 @@ import traceback
 # URL for API
 url = "https://mboum-finance.p.rapidapi.com/hi/history"
 
+# All data from API is in America/New_York exchange timezone
+from_zone = tz.gettz('America/New_York')
+
 # Headers for API
 headers = {
 	"X-RapidAPI-Host": "mboum-finance.p.rapidapi.com",
@@ -32,10 +35,6 @@ indDict = pd.Series(indices.Symbol.values, index=indices.CompanyName).to_dict()
 # Create a list of stock names for display purposes
 stockNameList = sorted(list(indDict.keys()))
 # print(f'{stockNameList}')
-
-# Tickers is a list of symbols as strings from the 'Symbol' column
-# of the dataframe 'indices'
-# tickers = sorted(indices['Symbol'])
 
 # List of timeframes, to be changed to 5min, 30min, 1h
 # 1h has a time signal of HH:30
@@ -56,10 +55,7 @@ srtCombo = {
      "clicked5" : ['', '', '', '', '', '']
 }
 
-
-
 # beansontoastA1? for PC
-# dspA123 for laptop
 # Establish connection using mysql connector
 db = mysql.connector.connect(
     host="localhost",
