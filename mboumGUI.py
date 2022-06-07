@@ -2,7 +2,6 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter import scrolledtext as st
 import pandas as pd
-from pandas import json_normalize
 import threading
 import time
 import datetime as dtOver
@@ -21,7 +20,7 @@ url = "https://mboum-finance.p.rapidapi.com/hi/history"
 
 # All data from API is in America/New_York exchange timezone
 from_zone = tz.gettz('America/New_York')
-
+to_zone = tz.gettz('Europe/London')
 # Headers for API
 headers = {
 	"X-RapidAPI-Host": "mboum-finance.p.rapidapi.com",
@@ -132,10 +131,25 @@ def calculateAndInsert(asset, period):
           response = requests.request("GET", url, headers=headers, params=querystring)
           # Convert response to json
           jsonResponse = response.json()
-          # Use built in Pandas function to normalize the json response into a dataframe
+          # Reverse the response as it is incredibly long and we only need the first 30
+          # items
           items = jsonResponse['items']
           items = dict(reversed(list(items.items())))
           # print(tabulate(df2, showindex=False, headers=list(df2.columns)))
+          count = 0
+          for row in items:
+               if count != 30:
+                    someDf = pd.DataFrame([items[row]])
+                    utc = dtInner.fromtimestamp(someDf.at[0, 'date_utc'], dtOver.timezone.utc).strftime("%d-%m-%Y %H:%M:%S")
+                    utc = dtInner.strptime(str(utc), '%d-%m-%Y %H:%M:%S')
+                    utc = utc.replace(tzinfo=from_zone)
+                    central = utc.astimezone(to_zone)
+                    central = central.strftime('%d-%m-%Y %H:%M:%S')
+                    someDf.at[0, 'date_gmt'] = central
+                    df = pd.concat([df, someDf], ignore_index=True)		
+                    count += 1
+               else:
+                    break
           # Drop unecessary columns
           df2.drop(['open', 'high', 'low', 'volume'], axis=1, inplace=True)
           # Change index to datetime to be able to order by date
