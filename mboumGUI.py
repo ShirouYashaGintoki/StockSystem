@@ -151,7 +151,7 @@ def calculateAndInsert(asset, period):
                else:
                     break
           # Drop unecessary columns
-          df2.drop(['open', 'high', 'low', 'volume'], axis=1, inplace=True)
+          df.drop(['date_utc', 'open', 'high', 'low', 'volume'], axis=1, inplace=True)
           # Change index to datetime to be able to order by date
           df2.set_index('datetime', inplace=True)
           # As data from the API comes earliest date first, in order to analyse it, it must be reversed
