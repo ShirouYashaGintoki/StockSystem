@@ -145,7 +145,7 @@ def calculateAndInsert(asset, period):
                     utc = utc.replace(tzinfo=from_zone)
                     central = utc.astimezone(to_zone)
                     central = central.strftime('%d-%m-%Y %H:%M:%S')
-                    someDf.at[0, 'date_gmt'] = central
+                    someDf.at[0, 'datetime'] = central
                     df = pd.concat([df, someDf], ignore_index=True)		
                     count += 1
                else:
@@ -327,7 +327,7 @@ timeFrame5 = StringVar(root)
 # Function to synchronise timing with current time
 def syncTiming5():
      # Get the current time as string
-     now = str(dtOver.now())
+     now = str(dtInner.now())
      # Split string by colon
      splitNow = now.split(":")
      # Get minutes and seconds as ints from split list by typecasting
@@ -346,7 +346,7 @@ def syncTiming5():
           return(actualSeconds)
 
 def syncTiming30():
-     now = str(dtOver.now())
+     now = str(dtInner.now())
      splitNow = now.split(":")
      minutes = int(splitNow[1])
      seconds = round(float(splitNow[2]))
@@ -361,7 +361,7 @@ def syncTiming30():
      return(actualSeconds)
 
 def syncTiming60():
-     now = str(dtOver.now())
+     now = str(dtInner.now())
      splitNow = now.split(":")
      minutes = int(splitNow[1])
      seconds = round(float(splitNow[2]))
@@ -377,7 +377,7 @@ def syncTiming60():
      
 
 def getData(tf):
-     if tf == "5min" :
+     if tf == "5m" :
           print("5MIN interval reached")
           symbolsToGet = []
           for key in srtCombo:
@@ -635,9 +635,9 @@ print(f'Five mins in: {fiveMinSyncTime} seconds')
 print(f'Thirty mins in: {thirtyMinSyncTime} seconds ')
 print(f'One hour in: {hourSyncTime} seconds')
 
-_5minThread = RepeatedTimer(fiveMinSyncTime, getData, "5min")
-_30minThread = RepeatedTimer(thirtyMinSyncTime, getData, "30min")
-_1hThread = RepeatedTimer(hourSyncTime, getData, "1hs")
+_5minThread = RepeatedTimer(fiveMinSyncTime, getData, "5m")
+_30minThread = RepeatedTimer(thirtyMinSyncTime, getData, "30m")
+_1hThread = RepeatedTimer(hourSyncTime, getData, "1h")
 
 _5minThread.interval = 301
 _30minThread.interval = 1801
