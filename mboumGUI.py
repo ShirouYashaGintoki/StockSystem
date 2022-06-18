@@ -75,7 +75,7 @@ except Exception:
 db.close()
 
 # Dataframe to hold the records of the current signals to prevent duplicate signals
-currentSignals = pd.DataFrame(columns=["datetime", "assetname", "close", "ema12", "ema26", "macd", "sigval", "selector"])
+currentSignals = pd.DataFrame(columns=["date_gmt", "assetname", "close", "ema12", "ema26", "macd", "sigval", "selector"])
 
 # Function to create a table in the database
 # for a given asset and timeframe combination
@@ -98,7 +98,7 @@ def createTable(assetName, timeFrame):
           # Execute query to create table if it doesn't already exist
           my_cursor.execute("""CREATE TABLE IF NOT EXISTS %s (
           rowid INT AUTO_INCREMENT PRIMARY KEY,
-          datetime DATETIME,
+          date_gmt DATETIME,
           assetname varchar(50),
           close FLOAT(5),
           ema12 FLOAT(2),
@@ -137,25 +137,32 @@ def calculateAndInsert(asset, period):
           items = dict(reversed(list(items.items())))
           # print(tabulate(df2, showindex=False, headers=list(df2.columns)))
           count = 0
+          df = pd.DataFrame(columns=['date_utc', 'date_gmt', 'open', 'high', 'low', 'close', 'volume'])
           for row in items:
-               if count != 30:
+               if count != 10:
                     someDf = pd.DataFrame([items[row]])
                     utc = dtInner.fromtimestamp(someDf.at[0, 'date_utc'], dtOver.timezone.utc).strftime("%d-%m-%Y %H:%M:%S")
                     utc = dtInner.strptime(str(utc), '%d-%m-%Y %H:%M:%S')
+                    # someDf.at[0, 'date_utc'] = utc
                     utc = utc.replace(tzinfo=from_zone)
                     central = utc.astimezone(to_zone)
                     central = central.strftime('%d-%m-%Y %H:%M:%S')
-                    someDf.at[0, 'datetime'] = central
+                    someDf.at[0, 'date_gmt'] = central
+                    # someDf.at[0, 'date_utc'] = dtInner.fromtimestamp(someDf.at[0, 'date_utc'], dtOver.timezone.utc).strftime("%d-%m-%Y %H:%M:%S")
                     df = pd.concat([df, someDf], ignore_index=True)		
                     count += 1
                else:
                     break
           # Drop unecessary columns
-          df.drop(['date_utc', 'open', 'high', 'low', 'volume'], axis=1, inplace=True)
+          df.drop(['date_utc', 'date', 'open', 'high', 'low', 'volume'], axis=1, inplace=True)
+          print("After dropping unecessary columns")
+          print(tabulate(df, showindex=False, headers=list(df.columns)))
           # Change index to datetime to be able to order by date
-          df2.set_index('datetime', inplace=True)
+          df.set_index('date_gmt', inplace=True)
           # As data from the API comes earliest date first, in order to analyse it, it must be reversed
-          df2 = df2.iloc[::-1]
+          df = df.iloc[::-1]
+          # After resetting index and reversing order
+          print(tabulate(df, showindex=False, headers=list(df.columns)))
           # print(df2.iloc[0])
           # Loop to find key from value name
           findKey = ""
@@ -163,20 +170,20 @@ def calculateAndInsert(asset, period):
                if asset == value:
                     findKey = key
           # Set values according to standard MACD settings values by using build in pandas calculations rather than manual calculations for better accuracy and reduction of code
-          df2['assetname'] = findKey
-          df2['EMA12'] = df2.close.ewm(span=12).mean()
-          df2['EMA26'] = df2.close.ewm(span=26).mean()
-          df2['MACD'] = df2.EMA12 - df2.EMA26
-          df2['sigval'] = df2.MACD.ewm(span=9).mean()
-          df2['selector'] = ""
+          df['assetname'] = findKey
+          df['EMA12'] = df.close.ewm(span=12).mean()
+          df['EMA26'] = df.close.ewm(span=26).mean()
+          df['MACD'] = df.EMA12 - df.EMA26
+          df['sigval'] = df.MACD.ewm(span=9).mean()
+          df['selector'] = ""
 
           # Iterate through dataframe rows starting from index 1 (as 0 will have no value)
-          for i in range(1, len(df2)):
-               if df2.MACD.iloc[i] > df2.sigval.iloc[i] and df2.MACD.iloc[i-1] < df2.sigval.iloc[i-1]:
-                    df2.iloc[[i], 6] = 'BUY'
-               elif df2.MACD.iloc[i] < df2.sigval.iloc[i] and df2.MACD.iloc[i-1] > df2.sigval.iloc[i-1]:
-                    df2.iloc[[i], 6] = 'SELL'
-          df2.to_sql((asset.lower()+period), engine, if_exists="append")
+          for i in range(1, len(df)):
+               if df.MACD.iloc[i] > df.sigval.iloc[i] and df.MACD.iloc[i-1] < df.sigval.iloc[i-1]:
+                    df.iloc[[i], 6] = 'BUY' 
+               elif df.MACD.iloc[i] < df.sigval.iloc[i] and df.MACD.iloc[i-1] > df.sigval.iloc[i-1]:
+                    df.iloc[[i], 6] = 'SELL'
+          df.to_sql((asset.lower()+period), engine, if_exists="append")
           # Try to remove any duplicates from the table (For some reason replace wont work)
           try:
                db = mysql.connector.connect(
@@ -191,7 +198,7 @@ def calculateAndInsert(asset, period):
                print("Removing duplicates if any exist from stocktables."+(asset+period).lower())
 
                # Execute query to delete duplicate records from the given table
-               my_cursor.execute("""DELETE FROM stocktables.%s WHERE rowid NOT IN (SELECT * FROM (SELECT Max(rowid) FROM %s GROUP BY datetime, assetname, close, selector) AS t);""" %((asset+period).lower(), (asset+period).lower()))
+               my_cursor.execute("""DELETE FROM stocktables.%s WHERE rowid NOT IN (SELECT * FROM (SELECT Max(rowid) FROM %s GROUP BY date_gmt, assetname, close, selector) AS t);""" %((asset+period).lower(), (asset+period).lower()))
 
                # Commit changes to db
                db.commit()
@@ -232,7 +239,7 @@ def displayResults(dfOfSignals):
           currentSignals = pd.concat([results, currentSignals], ignore_index=True)
           print("Current signals after adding results")
           print(tabulate(currentSignals, showindex=False, headers=results.columns))
-          results = results.sort_values(by=['datetime'])
+          results = results.sort_values(by=['date_gmt'])
           time_delta = timedelta(hours=5)
           if not results.empty:
                print(tabulate(results, showindex=False, headers=results.columns))
@@ -272,7 +279,7 @@ def retrieveSignalDates(listOfAssets, timeframe):
           SELECT *
           FROM {asset+timeframe}
           WHERE selector = "BUY" OR selector = "SELL"
-          ORDER BY datetime DESC;'''
+          ORDER BY date_gmt DESC;'''
           df = pd.read_sql(query, engine)
           listOfFrames.append(df)
      return pd.concat(listOfFrames)
