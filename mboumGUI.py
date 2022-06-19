@@ -158,11 +158,12 @@ def calculateAndInsert(asset, period):
           print("After dropping unecessary columns")
           print(tabulate(df, showindex=False, headers=list(df.columns)))
           # Change index to datetime to be able to order by date
-          df.set_index('date_gmt', inplace=True)
+          # df.set_index('date_gmt', inplace=True)
           # As data from the API comes earliest date first, in order to analyse it, it must be reversed
           df = df.iloc[::-1]
           # After resetting index and reversing order
-          print(tabulate(df, showindex=False, headers=list(df.columns)))
+          print("After setting index and reversing order")
+          print(tabulate(df, showindex=False, headers=list(df.columns))) 
           # print(df2.iloc[0])
           # Loop to find key from value name
           findKey = ""
@@ -176,7 +177,7 @@ def calculateAndInsert(asset, period):
           df['MACD'] = df.EMA12 - df.EMA26
           df['sigval'] = df.MACD.ewm(span=9).mean()
           df['selector'] = ""
-
+          print(tabulate(df, showindex=False, headers=list(df.columns)))
           # Iterate through dataframe rows starting from index 1 (as 0 will have no value)
           for i in range(1, len(df)):
                if df.MACD.iloc[i] > df.sigval.iloc[i] and df.MACD.iloc[i-1] < df.sigval.iloc[i-1]:

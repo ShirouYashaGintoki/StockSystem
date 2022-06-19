@@ -116,6 +116,9 @@ def createTable(assetName, timeFrame):
      finally:
           my_cursor.close()
 
+# df['col1'] = df['col1'].apply(complex_function)
+def convertTimezone(dateTime):
+     pass
 
 # Function to calculate values and insert data into the table
 # Args
@@ -246,6 +249,9 @@ def displayResults(dfOfSignals):
                displayBox.configure(state="disabled")
           else:
                print("Nothing available")
+               displayBox.configure(state="normal")
+               displayBox.insert("Nothing to add")
+               displayBox.configure(state="disabled")
      except Exception as e:
           print("DisplayBox error" + e)
           
