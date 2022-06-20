@@ -5,13 +5,15 @@ import pandas as pd
 from pandas import json_normalize
 import threading
 import time
-from datetime import datetime, timedelta
+import datetime as dtOver
+from datetime import datetime as dtInner, timedelta
 import requests
 from tabulate import tabulate
 import mysql.connector
 import sqlalchemy
 import pymysql
 import traceback
+from dateutil import tz
 
 # URL for API
 url = "https://twelve-data1.p.rapidapi.com/time_series"
@@ -53,7 +55,9 @@ srtCombo = {
      "clicked5" : ['', '', '', '', '', '']
 }
 
-
+# Set time zones as data received is in US timezone
+from_zone = tz.gettz('America/New_York')
+to_zone = tz.gettz('Europe/London')
 
 # beansontoastA1? for PC
 # dspA123 for laptop
@@ -117,7 +121,16 @@ def createTable(assetName, timeFrame):
           my_cursor.close()
 
 # df['col1'] = df['col1'].apply(complex_function)
+# Function to convert given datetime from US/New York timezone
+# into local timezone (GMT/BST)
+# Args
+# datetime -> A value from the column that is given
 def convertTimezone(dateTime):
+     utc = dtInner.fromtimestamp(dateTime, dtOver.timezone.utc).strftime("%d-%m-%Y %H:%M:%S")
+     utc = dtInner.strptime(str(utc), '%d-%m-%Y %H:%M:%S')
+     utc = utc.replace(tzinfo=from_zone)
+     central = utc.astimezone(to_zone)
+     central = central.strftime('%d-%m-%Y %H:%M:%S')
      pass
 
 # Function to calculate values and insert data into the table
