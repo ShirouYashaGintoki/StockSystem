@@ -131,7 +131,7 @@ def convertTimezone(dateTime):
      utc = utc.replace(tzinfo=from_zone)
      central = utc.astimezone(to_zone)
      central = central.strftime('%d-%m-%Y %H:%M:%S')
-     pass
+     return central
 
 # Function to calculate values and insert data into the table
 # Args
@@ -332,7 +332,7 @@ timeFrame5 = StringVar(root)
 # Function to synchronise timing with current time
 def syncTiming5():
      # Get the current time as string
-     now = str(datetime.now())
+     now = str(dtOver.now())
      # Split string by colon
      splitNow = now.split(":")
      # Get minutes and seconds as ints from split list by typecasting
@@ -351,7 +351,7 @@ def syncTiming5():
           return(actualSeconds)
 
 def syncTiming30():
-     now = str(datetime.now())
+     now = str(dtOver.now())
      splitNow = now.split(":")
      minutes = int(splitNow[1])
      seconds = round(float(splitNow[2]))
@@ -366,7 +366,7 @@ def syncTiming30():
      return(actualSeconds)
 
 def syncTiming60():
-     now = str(datetime.now())
+     now = str(dtOver.now())
      splitNow = now.split(":")
      minutes = int(splitNow[1])
      seconds = round(float(splitNow[2]))
