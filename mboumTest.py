@@ -30,6 +30,7 @@ count = 0
 for row in items:
 	if count != 10:
 		someDf = pd.DataFrame([items[row]])
+		# print((someDf.at[0, 'date_utc']) + " / " + type((someDf.at[0, 'date_utc'])))
 		utc = dtInner.fromtimestamp(someDf.at[0, 'date_utc'], dtOver.timezone.utc).strftime("%d-%m-%Y %H:%M:%S")
 		
 		# someDf.at[0, 'date_utc'] = utc

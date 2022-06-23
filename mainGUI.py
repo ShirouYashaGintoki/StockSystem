@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter import scrolledtext as st
+import numpy as np
 import pandas as pd
 from pandas import json_normalize
 import threading
@@ -126,12 +127,14 @@ def createTable(assetName, timeFrame):
 # Args
 # datetime -> A value from the column that is given
 def convertTimezone(dateTime):
+     print(f'{str(dateTime)} / {type(dateTime)}')
      utc = dtInner.fromtimestamp(dateTime, dtOver.timezone.utc).strftime("%d-%m-%Y %H:%M:%S")
      utc = dtInner.strptime(str(utc), '%d-%m-%Y %H:%M:%S')
      utc = utc.replace(tzinfo=from_zone)
      central = utc.astimezone(to_zone)
      central = central.strftime('%d-%m-%Y %H:%M:%S')
      return central
+     
 
 # Function to calculate values and insert data into the table
 # Args
@@ -155,7 +158,7 @@ def calculateAndInsert(asset, period):
           # Drop unecessary columns
           df2.drop(['open', 'high', 'low', 'volume'], axis=1, inplace=True)
           # Change index to datetime to be able to order by date
-          df2.set_index('datetime', inplace=True)
+          # df2.set_index('datetime', inplace=True)
           # As data from the API comes earliest date first, in order to analyse it, it must be reversed
           df2 = df2.iloc[::-1]
           # print(df2.iloc[0])
@@ -172,12 +175,26 @@ def calculateAndInsert(asset, period):
           df2['sigval'] = df2.MACD.ewm(span=9).mean()
           df2['selector'] = ""
 
+          print("Before attempting conversion of timezones\nNo set index")
+          print(tabulate(df2, showindex=True, headers=list(df2.columns)))
+          df2['datetime'] = df2['datetime'].apply(convertTimezone)
+          # df2['datetime'] = df2.apply(lambda x: convertTimezone(x['datetime']), axis=1)
+          # df2['datetime'] = np.vectorize(convertTimezone)(df2['datetime'])
+
+          print("After converting time and resetting index")
+          df2.set_index('datetime', inplace=True)
+          print(tabulate(df2, showindex=True, headers=list(df2.columns)))
+
           # Iterate through dataframe rows starting from index 1 (as 0 will have no value)
           for i in range(1, len(df2)):
+               print(f'MACD: {df2.MACD.iloc[i]}/, {type({df2.MACD.iloc[i]})}')
+               print(f'Sigval: {df2.sigval.iloc[i]}/, {type({df2.sigval.iloc[i]})}')
+
                if df2.MACD.iloc[i] > df2.sigval.iloc[i] and df2.MACD.iloc[i-1] < df2.sigval.iloc[i-1]:
                     df2.iloc[[i], 6] = 'BUY'
                elif df2.MACD.iloc[i] < df2.sigval.iloc[i] and df2.MACD.iloc[i-1] > df2.sigval.iloc[i-1]:
                     df2.iloc[[i], 6] = 'SELL'
+
           df2.to_sql((asset.lower()+period), engine, if_exists="append")
           # Try to remove any duplicates from the table (For some reason replace wont work)
           try:
@@ -263,10 +280,10 @@ def displayResults(dfOfSignals):
           else:
                print("Nothing available")
                displayBox.configure(state="normal")
-               displayBox.insert("Nothing to add")
+               displayBox.insert('end', "Nothing to add")
                displayBox.configure(state="disabled")
      except Exception as e:
-          print("DisplayBox error" + e)
+          print("DisplayBox error" + str(e))
           
 
 def retrieveSignalDates(listOfAssets, timeframe):
@@ -332,7 +349,7 @@ timeFrame5 = StringVar(root)
 # Function to synchronise timing with current time
 def syncTiming5():
      # Get the current time as string
-     now = str(dtOver.now())
+     now = str(dtInner.now())
      # Split string by colon
      splitNow = now.split(":")
      # Get minutes and seconds as ints from split list by typecasting
@@ -351,7 +368,7 @@ def syncTiming5():
           return(actualSeconds)
 
 def syncTiming30():
-     now = str(dtOver.now())
+     now = str(dtInner.now())
      splitNow = now.split(":")
      minutes = int(splitNow[1])
      seconds = round(float(splitNow[2]))
@@ -366,7 +383,7 @@ def syncTiming30():
      return(actualSeconds)
 
 def syncTiming60():
-     now = str(dtOver.now())
+     now = str(dtInner.now())
      splitNow = now.split(":")
      minutes = int(splitNow[1])
      seconds = round(float(splitNow[2]))
