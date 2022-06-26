@@ -8,13 +8,14 @@ import threading
 import time
 import datetime as dtOver
 from datetime import datetime as dtInner, timedelta
+from dateutil import tz
+import pytz
 import requests
 from tabulate import tabulate
 import mysql.connector
 import sqlalchemy
 import pymysql
 import traceback
-from dateutil import tz
 
 # URL for API
 url = "https://twelve-data1.p.rapidapi.com/time_series"
@@ -58,7 +59,9 @@ srtCombo = {
 
 # Set time zones as data received is in US timezone
 from_zone = tz.gettz('America/New_York')
-to_zone = tz.gettz('Europe/London')
+apiFormat = "%Y-%m-%d %H:%M:%S"
+ukFormat = "%d-%m-%Y %H:%M:%S"
+local_zone = tz.tzlocal()
 
 # beansontoastA1? for PC
 # dspA123 for laptop
@@ -127,13 +130,18 @@ def createTable(assetName, timeFrame):
 # Args
 # datetime -> A value from the column that is given
 def convertTimezone(dateTime):
-     print(f'{str(dateTime)} / {type(dateTime)}')
-     utc = dtInner.fromtimestamp(dateTime, dtOver.timezone.utc).strftime("%d-%m-%Y %H:%M:%S")
-     utc = dtInner.strptime(str(utc), '%d-%m-%Y %H:%M:%S')
-     utc = utc.replace(tzinfo=from_zone)
-     central = utc.astimezone(to_zone)
-     central = central.strftime('%d-%m-%Y %H:%M:%S')
-     return central
+     dt_utc = dtInner.strptime(dateTime, apiFormat)
+     dt_utc = dt_utc.replace(tzinfo=from_zone)
+     dt_local = dt_utc.astimezone(local_zone)
+     local_time_str = dt_local.strftime(ukFormat)
+     return local_time_str
+     # print(f'{str(dateTime)} / {type(dateTime)}')
+     # utc = dtInner.fromtimestamp(dateTime, dtOver.timezone.utc).strftime("%d-%m-%Y %H:%M:%S")
+     # utc = dtInner.strptime(str(utc), '%d-%m-%Y %H:%M:%S')
+     # utc = utc.replace(tzinfo=from_zone)
+     # central = utc.astimezone(to_zone)
+     # central = central.strftime('%d-%m-%Y %H:%M:%S')
+     # return central
      
 
 # Function to calculate values and insert data into the table
