@@ -5,6 +5,7 @@ import pytz
 other_string = '2022-06-22 15:55:00'
 format = "%Y-%m-%d %H:%M:%S"
 ukFormat = "%d-%m-%Y %H:%M:%S"
+from_zone = tz.gettz('America/New_York')
 local_zone = tz.tzlocal()
 # format = "%d%m%Y %H:%M:%S"
 # Create datetime object in local timezone
@@ -12,7 +13,7 @@ local_zone = tz.tzlocal()
 
 def convertTz(tzString):
     dt_utc = dtInner.strptime(other_string, format)
-    dt_utc = dt_utc.replace(tzinfo=pytz.UTC)
+    dt_utc = dt_utc.replace(tzinfo=from_zone)
     dt_local = dt_utc.astimezone(local_zone)
     local_time_str = dt_local.strftime(ukFormat)
     return local_time_str

@@ -129,8 +129,8 @@ def createTable(assetName, timeFrame):
 # into local timezone (GMT/BST)
 # Args
 # datetime -> A value from the column that is given
-def convertTimezone(dateTime):
-     dt_utc = dtInner.strptime(dateTime, apiFormat)
+def convertTimezone(timeStamp):
+     dt_utc = dtInner.strptime(timeStamp, apiFormat)
      dt_utc = dt_utc.replace(tzinfo=from_zone)
      dt_local = dt_utc.astimezone(local_zone)
      local_time_str = dt_local.strftime(ukFormat)
@@ -183,19 +183,19 @@ def calculateAndInsert(asset, period):
           df2['sigval'] = df2.MACD.ewm(span=9).mean()
           df2['selector'] = ""
 
-          print("Before attempting conversion of timezones\nNo set index")
-          print(tabulate(df2, showindex=True, headers=list(df2.columns)))
-          df2['datetime'] = df2['datetime'].apply(convertTimezone)
+          # print("Before attempting conversion of timezones\nNo set index")
+          # print(tabulate(df2, showindex=True, headers=list(df2.columns)))
+          # df2['datetime'] = df2['datetime'].apply(convertTimezone)
           # df2['datetime'] = df2.apply(lambda x: convertTimezone(x['datetime']), axis=1)
           # df2['datetime'] = np.vectorize(convertTimezone)(df2['datetime'])
 
-          print("After converting time and resetting index")
+          print("No converting timezone, index reset")
           df2.set_index('datetime', inplace=True)
           print(tabulate(df2, showindex=True, headers=list(df2.columns)))
 
           # Iterate through dataframe rows starting from index 1 (as 0 will have no value)
           for i in range(1, len(df2)):
-               print(f'MACD: {df2.MACD.iloc[i]}/, {type({df2.MACD.iloc[i]})}')
+               # print(f'MACD: {df2.MACD.iloc[i]}/, {type({df2.MACD.iloc[i]})}')
                print(f'Sigval: {df2.sigval.iloc[i]}/, {type({df2.sigval.iloc[i]})}')
 
                if df2.MACD.iloc[i] > df2.sigval.iloc[i] and df2.MACD.iloc[i-1] < df2.sigval.iloc[i-1]:
@@ -259,6 +259,11 @@ def displayResults(dfOfSignals):
           currentSignals = pd.concat([results, currentSignals], ignore_index=True)
           print("Current signals after adding results")
           print(tabulate(currentSignals, showindex=False, headers=results.columns))
+          # Trying to convert date format into local as string because MySQL only accepts
+          # YYYY-MM-DD format, not the UK format
+          print("Current signals after converting date format")
+          results['datetime'] = results['datetime'].apply(convertTimezone)
+          print(tabulate(results, showindex=True, headers=list(results.columns)))
           results = results.sort_values(by=['datetime'])
           time_delta = timedelta(hours=5)
           if not results.empty:
