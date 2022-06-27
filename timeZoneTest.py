@@ -12,10 +12,11 @@ local_zone = tz.tzlocal()
 # dt_utc = datetime.strptime(dt_str, format)
 
 def convertTz(tzString):
-    dt_utc = dtInner.strptime(other_string, format)
+    dt_utc = dtInner.strptime(tzString, format)
     dt_utc = dt_utc.replace(tzinfo=from_zone)
     dt_local = dt_utc.astimezone(local_zone)
     local_time_str = dt_local.strftime(ukFormat)
+    print(type(local_time_str))
     return local_time_str
 
 # dt_utc = dtInner.strptime(other_string, format)

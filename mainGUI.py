@@ -129,8 +129,9 @@ def createTable(assetName, timeFrame):
 # into local timezone (GMT/BST)
 # Args
 # datetime -> A value from the column that is given
-def convertTimezone(timeStamp):
-     dt_utc = dtInner.strptime(timeStamp, apiFormat)
+def convertTimezone(timeInColumn):
+     dt_utc = str(timeInColumn)
+     dt_utc = dtInner.strptime(dt_utc, apiFormat)
      dt_utc = dt_utc.replace(tzinfo=from_zone)
      dt_local = dt_utc.astimezone(local_zone)
      local_time_str = dt_local.strftime(ukFormat)
@@ -196,7 +197,7 @@ def calculateAndInsert(asset, period):
           # Iterate through dataframe rows starting from index 1 (as 0 will have no value)
           for i in range(1, len(df2)):
                # print(f'MACD: {df2.MACD.iloc[i]}/, {type({df2.MACD.iloc[i]})}')
-               print(f'Sigval: {df2.sigval.iloc[i]}/, {type({df2.sigval.iloc[i]})}')
+               # print(f'Sigval: {df2.sigval.iloc[i]}/, {type({df2.sigval.iloc[i]})}')
 
                if df2.MACD.iloc[i] > df2.sigval.iloc[i] and df2.MACD.iloc[i-1] < df2.sigval.iloc[i-1]:
                     df2.iloc[[i], 6] = 'BUY'
@@ -250,7 +251,6 @@ def displayResults(dfOfSignals):
           # Print 
           print("Current Signals dataframe")
           print(tabulate(currentSignals, showindex=False, headers=results.columns))
-          # Below line shifts table values to the left resuling in errors
           results = results[~results.apply(tuple,1).isin(currentSignals.apply(tuple,1))]
           # if results[9] != "BUY" or results[9] != "SELL":
           #      results.shift(1, axis=1)
@@ -264,6 +264,7 @@ def displayResults(dfOfSignals):
           print("Current signals after converting date format")
           results['datetime'] = results['datetime'].apply(convertTimezone)
           print(tabulate(results, showindex=True, headers=list(results.columns)))
+          # Line 286 gives error signalDt = row[1] + time_delta
           results = results.sort_values(by=['datetime'])
           time_delta = timedelta(hours=5)
           if not results.empty:
@@ -296,7 +297,7 @@ def displayResults(dfOfSignals):
                displayBox.insert('end', "Nothing to add")
                displayBox.configure(state="disabled")
      except Exception as e:
-          print("DisplayBox error" + str(e))
+          print("DisplayBox error " + str(e))
           
 
 def retrieveSignalDates(listOfAssets, timeframe):
