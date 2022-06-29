@@ -1,15 +1,13 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter import scrolledtext as st
-import numpy as np
 import pandas as pd
 from pandas import json_normalize
 import threading
 import time
 import datetime as dtOver
-from datetime import datetime as dtInner, timedelta
+from datetime import datetime as dtInner
 from dateutil import tz
-import pytz
 import requests
 from tabulate import tabulate
 import mysql.connector
@@ -266,14 +264,13 @@ def displayResults(dfOfSignals):
           print(tabulate(results, showindex=True, headers=list(results.columns)))
           # Line 286 gives error signalDt = row[1] + time_delta
           results = results.sort_values(by=['datetime'])
-          time_delta = timedelta(hours=5)
           if not results.empty:
                print(tabulate(results, showindex=False, headers=results.columns))
                for row in results.itertuples():
                     if row[8] == "BUY":
                          displayBox.configure(state="normal")
                          assetName = row[2]
-                         signalDt = row[1] + time_delta
+                         signalDt = row[1]
                          closePrice = row[3]
                          assetInputString = f'BUY: {assetName}\n'
                          displayBox.insert('end', assetInputString, 'BUY')
@@ -283,7 +280,7 @@ def displayResults(dfOfSignals):
                     elif row[8] == "SELL":
                          displayBox.configure(state="normal")
                          assetName = row[2]
-                         signalDt = row[1] + time_delta
+                         signalDt = row[1]
                          closePrice = row[3]
                          assetInputString = f'SELL: {assetName}\n'
                          displayBox.insert('end', assetInputString, 'SELL')
