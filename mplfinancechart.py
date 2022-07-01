@@ -6,8 +6,9 @@ import matplotlib as plt
 import time
 import threading
 import numpy as np
-import mplfinance as mf
+import mplfinance as mpf
 from datetime import datetime as dtInner
+
 
 def printSomething():
     print("This should happen in the background")
@@ -70,6 +71,7 @@ df2['high'] = df2['high'].apply(makeFloat)
 df2['low'] = df2['low'].apply(makeFloat)
 df2['close'] = df2['close'].apply(makeFloat)
 df2['volume'] = df2['volume'].apply(makeInt)
+df2['volume'].apply(lambda x: '%.12f' % x)
 
 # _5minThread = RepeatedTimer(5, printSomething)
 
@@ -79,14 +81,28 @@ df2['MACD'] = df2.EMA12 - df2.EMA26
 df2['sigval'] = df2.MACD.ewm(span=9).mean()
 df2['selector'] = ""
 
+buyPoints = []
+sellPoints = []
 
-for i in range(1, len(df2)):
+counter = 0
+for i in range(0, len(df2)):
+     if counter == 0:
+          counter += 1
+          buyPoints.append(np.nan)
+          sellPoints.append(np.nan)
+          continue
      if df2.MACD.iloc[i] > df2.sigval.iloc[i] and df2.MACD.iloc[i-1] < df2.sigval.iloc[i-1]:
           df2.iloc[[i], 9] = 'BUY'
-     elif df2.MACD.iloc[i] < df2.sigval.iloc[i] and df2.MACD.iloc[i-1] > df2.sigval.iloc[i-1]:
-          df2.iloc[[i], 9] = 'SELL'
+          buyPoints.append(df2.close.iloc[i] * 0.98)
      else:
-          df2.iloc[[i], 9] = np.nan
+          buyPoints.append(np.nan)
+
+     if df2.MACD.iloc[i] < df2.sigval.iloc[i] and df2.MACD.iloc[i-1] > df2.sigval.iloc[i-1]:
+          df2.iloc[[i], 9] = 'SELL'
+          sellPoints.append(df2.close.iloc[i] * 1.02)
+     else:
+          sellPoints.append(np.nan)
+
 
 buySignals = df2.query('selector == "BUY"')
 sellSignals = df2.query('selector == "SELL"')
@@ -94,25 +110,32 @@ sellSignals = df2.query('selector == "SELL"')
 buyValues = buySignals['close'].tolist()
 sellValues = sellSignals['close'].tolist()
 
-print(buyValues)
-print(sellValues)
-
-buy_markers = mf.make_addplot(buyValues, type='scatter', markersize=120, marker='^')
-sell_markers = mf.make_addplot(sellValues, type='scatter', markersize=120, marker='v')
+buy_markers = mpf.make_addplot(buyPoints, type='scatter', markersize=120, marker='^')
+sell_markers = mpf.make_addplot(sellPoints, type='scatter', markersize=120, marker='v')
 
 apds = [buy_markers, sell_markers]
 df3 = df2
 df3.drop(['EMA12', 'EMA26', 'MACD', 'sigval', 'selector'], axis=1, inplace=True)
 
 print("NORMAL DF")
-print(tabulate(df2, showindex=True, headers=list(df2.columns)))
+print(df2)
 print("------------------------------")
 
 print("CHART DF")
-print(tabulate(df3, showindex=True, headers=list(df3.columns)))
+print(df3)
 print("------------------------------")
 
-# mf.plot(df3, type="candle", addplot=apds)
+print('size of x = {0}'.format(df2.index.size))
+print('size of y = {0}'.format(df2['close'].size))
+
+print(f'{buyPoints} / {len(buyPoints)}')
+print(f'{sellPoints} / {len(sellPoints)}')
+
+buy_markers = mpf.make_addplot(buyPoints, type='scatter', markersize=120, marker='^')
+sell_markers = mpf.make_addplot(sellPoints, type='scatter', markersize=120, marker='v')
+apds = [buy_markers, sell_markers]
+mpf.plot(df3, type="candle", addplot=apds)
+
 
 # mf.plot(df2)
 
