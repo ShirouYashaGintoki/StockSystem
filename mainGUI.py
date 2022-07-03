@@ -122,6 +122,31 @@ def createTable(assetName, timeFrame):
      finally:
           my_cursor.close()
 
+def makeFloat(given):
+     fixed = float(given)
+     return fixed
+
+def makeInt(given):
+     fixed = int(given)
+     return fixed
+
+def retrieveSignalDates(listOfAssets, timeframe):
+     engine = sqlalchemy.create_engine('mysql://root:beansontoastA1?@localhost:3306/stocktables')
+     listOfFrames = []
+     for asset in listOfAssets:
+          query = f'''
+          SELECT *
+          FROM {asset+timeframe}
+          WHERE selector = "BUY" OR selector = "SELL"
+          ORDER BY datetime DESC;'''
+          df = pd.read_sql(query, engine)
+          listOfFrames.append(df)
+     return pd.concat(listOfFrames)
+
+def displayChartWithSignals(ticker, timeframe):
+
+     pass
+
 # df['col1'] = df['col1'].apply(complex_function)
 # Function to convert given datetime from US/New York timezone
 # into local timezone (GMT/BST)
@@ -296,19 +321,6 @@ def displayResults(dfOfSignals):
      except Exception as e:
           print("DisplayBox error " + str(e))
           
-
-def retrieveSignalDates(listOfAssets, timeframe):
-     engine = sqlalchemy.create_engine('mysql://root:beansontoastA1?@localhost:3306/stocktables')
-     listOfFrames = []
-     for asset in listOfAssets:
-          query = f'''
-          SELECT *
-          FROM {asset+timeframe}
-          WHERE selector = "BUY" OR selector = "SELL"
-          ORDER BY datetime DESC;'''
-          df = pd.read_sql(query, engine)
-          listOfFrames.append(df)
-     return pd.concat(listOfFrames)
 
 class RepeatedTimer(object):
      def __init__(self, interval, function, *args, **kwargs):
