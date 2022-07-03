@@ -262,9 +262,11 @@ def calculateAndInsert(asset, period):
 def displayResults(dfOfSignals):
      try:
           # Query dataframe argument to select only signal records
-          results = dfOfSignals.query('selector == "BUY" or selector == "SELL"')
+          # results = dfOfSignals.query('selector == "BUY" or selector == "SELL"')
+          
           # Drop the rowid to compare with currentSignals
-          results = results.drop(['rowid'], axis=1, errors='ignore')
+          results = dfOfSignals.drop(['rowid'], axis=1, errors='ignore')
+          results.sort_values(by=['datetime'])
           # Print results for checking
           print("Initial results")
           print(tabulate(results, showindex=False, headers=results.columns))
@@ -299,7 +301,7 @@ def displayResults(dfOfSignals):
                          closePrice = row[3]
                          assetInputString = f'BUY: {assetName}\n'
                          displayBox.insert('end', assetInputString, 'BUY')
-                         inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {str(closePrice)}\n------------------------------\n"""
+                         inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {str(closePrice)}\n---------------------------------------------\n"""
                          displayBox.insert('end', inputString)
                          print(inputString)
                     elif row[8] == "SELL":
@@ -309,7 +311,7 @@ def displayResults(dfOfSignals):
                          closePrice = row[3]
                          assetInputString = f'SELL: {assetName}\n'
                          displayBox.insert('end', assetInputString, 'SELL')
-                         inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {str(closePrice)}\n------------------------------\n"""
+                         inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {str(closePrice)}\n---------------------------------------------\n"""
                          displayBox.insert('end', inputString)
                          print(inputString)
                displayBox.configure(state="disabled")
@@ -455,7 +457,6 @@ def getData(tf):
 def callback1(clicker, timeframe, clickerName):
      # When dropdown is changed, check if its combo exists
      # print(f'New clicker/timeframe combo: {clicker.get()}, {timeframe.get()}')
-     # clickerName = argname(clicker)
      for keyName in srtCombo:
           # print(f'Checking this clicker: {srtCombo[keyName]}')
           # print(f'Recieved clicker name: {clickerName}, Current key name: {keyName}')
