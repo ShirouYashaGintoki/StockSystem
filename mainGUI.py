@@ -5,6 +5,7 @@ import pandas as pd
 from pandas import json_normalize
 import threading
 import time
+import numpy as np
 import datetime as dtOver
 from datetime import datetime as dtInner
 from dateutil import tz
@@ -130,22 +131,69 @@ def makeInt(given):
      fixed = int(given)
      return fixed
 
-def retrieveSignalDates(listOfAssets, timeframe):
+# def retrieveSignalDates(listOfAssets, timeframe):
+#      engine = sqlalchemy.create_engine('mysql://root:beansontoastA1?@localhost:3306/stocktables')
+#      listOfFrames = []
+#      for asset in listOfAssets:
+#           query = f'''
+#           SELECT *
+#           FROM {asset+timeframe}
+#           WHERE selector = "BUY" OR selector = "SELL"
+#           ORDER BY datetime DESC;'''
+#           df = pd.read_sql(query, engine)
+#           listOfFrames.append(df)
+#      return pd.concat(listOfFrames)
+
+def retrieveDataOneTf(listOfAssets, timeframe):
      engine = sqlalchemy.create_engine('mysql://root:beansontoastA1?@localhost:3306/stocktables')
      listOfFrames = []
      for asset in listOfAssets:
           query = f'''
           SELECT *
           FROM {asset+timeframe}
-          WHERE selector = "BUY" OR selector = "SELL"
-          ORDER BY datetime DESC;'''
+          ORDER BY datetime DESC LIMIT 30;'''
           df = pd.read_sql(query, engine)
           listOfFrames.append(df)
      return pd.concat(listOfFrames)
+ 
 
+# Function to display chart with signal indicators
+# ticker -> Given ticker
+# timeframe -> Given timeframe
 def displayChartWithSignals(ticker, timeframe):
+     # Retrieve last 30 (or 60) results from the database
+     results = retrieveDataOneTf([ticker], timeframe)
+     results.index = pd.DatetimeIndex(results['datetime'])
+     results.drop(['datetime'], axis=1, inplace=True)
+     results['open'] = results['open'].apply(makeFloat)
+     results['high'] = results['high'].apply(makeFloat)
+     results['low'] = results['low'].apply(makeFloat)
+     results['close'] = results['close'].apply(makeFloat)
+     results['volume'] = results['volume'].apply(makeInt)
+     results['volume'].apply(lambda x: '%.12f' % x)
 
-     pass
+     buyPoints = []
+     sellPoints = []
+
+     counter = 0
+     for i in range(0, len(results)):
+          if counter == 0:
+               counter += 1
+               buyPoints.append(np.nan)
+               sellPoints.append(np.nan)
+               continue
+          if df2.MACD.iloc[i] > df2.sigval.iloc[i] and df2.MACD.iloc[i-1] < df2.sigval.iloc[i-1]:
+               df2.iloc[[i], 9] = 'BUY'
+               buyPoints.append(df2.close.iloc[i] * 0.98)
+          else:
+               buyPoints.append(np.nan)
+
+          if df2.MACD.iloc[i] < df2.sigval.iloc[i] and df2.MACD.iloc[i-1] > df2.sigval.iloc[i-1]:
+               df2.iloc[[i], 9] = 'SELL'
+               sellPoints.append(df2.close.iloc[i] * 1.02)
+          else:
+               sellPoints.append(np.nan)
+
 
 # df['col1'] = df['col1'].apply(complex_function)
 # Function to convert given datetime from US/New York timezone
@@ -262,10 +310,9 @@ def calculateAndInsert(asset, period):
 def displayResults(dfOfSignals):
      try:
           # Query dataframe argument to select only signal records
-          # results = dfOfSignals.query('selector == "BUY" or selector == "SELL"')
-          
+          results = dfOfSignals.query('selector == "BUY" or selector == "SELL"')
           # Drop the rowid to compare with currentSignals
-          results = dfOfSignals.drop(['rowid'], axis=1, errors='ignore')
+          results = results.drop(['rowid'], axis=1, errors='ignore')
           results.sort_values(by=['datetime'])
           # Print results for checking
           print("Initial results")
@@ -421,7 +468,6 @@ def syncTiming60():
                diff = 59 - minutes
      actualSeconds = ((diff * 60) - seconds) + 1
      return(actualSeconds)
-     
 
 def getData(tf):
      if tf == "5min" :
@@ -436,7 +482,7 @@ def getData(tf):
           for asset in symbolsToGet:
                try:
                     calculateAndInsert(asset, tf)
-                    returnedDf = retrieveSignalDates(symbolsToGet, tf)
+                    returnedDf = retrieveDataOneTf()(symbolsToGet, tf)
                     displayResults(returnedDf)
                     # print(tabulate(returnedDf, showindex=False, headers=returnedDf.columns))
                     # print(tabulate(df2, showindex=False, headers=list(df2.columns)))
@@ -589,6 +635,7 @@ drop1.place(x=0, y=0)
 button1 = Button(root, text="Get chart")
 button1.columnconfigure(0, weight=0)
 button1.place(x=0, y=35)
+# button1['command'] = 
 
 dropTf1 = OptionMenu(root, timeFrame1, *timeFrames)
 dropTf1.config(width=10, bg="blue", foreground="white")
