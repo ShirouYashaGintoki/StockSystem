@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter import scrolledtext as st
+from unittest import result
 import pandas as pd
 from pandas import json_normalize
 import threading
@@ -15,6 +16,8 @@ import mysql.connector
 import sqlalchemy
 import pymysql
 import traceback
+import mplfinance as mpf
+
 
 # URL for API
 url = "https://twelve-data1.p.rapidapi.com/time_series"
@@ -145,6 +148,7 @@ def makeInt(given):
 #      return pd.concat(listOfFrames)
 
 def retrieveDataOneTf(listOfAssets, timeframe):
+     pymysql.install_as_MySQLdb()
      engine = sqlalchemy.create_engine('mysql://root:beansontoastA1?@localhost:3306/stocktables')
      listOfFrames = []
      for asset in listOfAssets:
@@ -161,39 +165,54 @@ def retrieveDataOneTf(listOfAssets, timeframe):
 # ticker -> Given ticker
 # timeframe -> Given timeframe
 def displayChartWithSignals(ticker, timeframe):
-     # Retrieve last 30 (or 60) results from the database
-     results = retrieveDataOneTf([ticker], timeframe)
-     results.index = pd.DatetimeIndex(results['datetime'])
-     results.drop(['datetime'], axis=1, inplace=True)
-     results['open'] = results['open'].apply(makeFloat)
-     results['high'] = results['high'].apply(makeFloat)
-     results['low'] = results['low'].apply(makeFloat)
-     results['close'] = results['close'].apply(makeFloat)
-     results['volume'] = results['volume'].apply(makeInt)
-     results['volume'].apply(lambda x: '%.12f' % x)
+     try:
+          if timeframe == "5MIN":
+               timeframe = "5min"
+          # Retrieve last 30 (or 60) results from the database
+          results = retrieveDataOneTf([indDict[ticker]], timeframe)
+          results.index = pd.DatetimeIndex(results['datetime'])
+          results.drop(['datetime'], axis=1, inplace=True)
+          print(results)
+          results['open'] = results['open'].apply(makeFloat)
+          results['high'] = results['high'].apply(makeFloat)
+          results['low'] = results['low'].apply(makeFloat)
+          results['close'] = results['close'].apply(makeFloat)
+          results['volume'] = results['volume'].apply(makeInt)
+          results['volume'].apply(lambda x: '%.12f' % x)
 
-     buyPoints = []
-     sellPoints = []
+          buyPoints = []
+          sellPoints = []
 
-     counter = 0
-     for i in range(0, len(results)):
-          if counter == 0:
-               counter += 1
-               buyPoints.append(np.nan)
-               sellPoints.append(np.nan)
-               continue
-          if df2.MACD.iloc[i] > df2.sigval.iloc[i] and df2.MACD.iloc[i-1] < df2.sigval.iloc[i-1]:
-               df2.iloc[[i], 9] = 'BUY'
-               buyPoints.append(df2.close.iloc[i] * 0.98)
-          else:
-               buyPoints.append(np.nan)
+          counter = 0
+          for i in range(0, len(results)):
+               if counter == 0:
+                    counter += 1
+                    buyPoints.append(np.nan)
+                    sellPoints.append(np.nan)
+                    continue
+               else:
+                    if results.selector.iloc[i] == "BUY":
+                         buyPoints.append(results.close.iloc[i])
+                    else:
+                         buyPoints.append(np.nan)
+                    
+                    if results.selector.iloc[i] == "SELL":
+                         sellPoints.append(results.close.iloc[i])
+                    else:
+                         sellPoints.append(np.nan)
 
-          if df2.MACD.iloc[i] < df2.sigval.iloc[i] and df2.MACD.iloc[i-1] > df2.sigval.iloc[i-1]:
-               df2.iloc[[i], 9] = 'SELL'
-               sellPoints.append(df2.close.iloc[i] * 1.02)
-          else:
-               sellPoints.append(np.nan)
+          print(buyPoints)
+          print(sellPoints)
+          buy_markers = mpf.make_addplot(buyPoints, type='scatter', markersize=120, marker='^')
+          sell_markers = mpf.make_addplot(sellPoints, type='scatter', markersize=120, marker='v')
 
+          apds = [buy_markers, sell_markers]
+          mpf.plot(results, type="candle", addplot=apds)
+     except Exception as e:
+          messagebox.showerror("ERROR", """There is currently no data for this stock/
+          timeframe pairing.\nPlease wait until the next interval before trying again.""")
+          print(e)
+     
 
 # df['col1'] = df['col1'].apply(complex_function)
 # Function to convert given datetime from US/New York timezone
@@ -616,6 +635,9 @@ timeFrame4.trace_add("write", lambda var_name, var_index, operation: callback2(c
 #####################################
 
 
+def testButton(stock, time):
+     print(stock, time)
+
 # Stock 5
 #####################################
 clicked5.set(stockNameList[4])
@@ -635,7 +657,7 @@ drop1.place(x=0, y=0)
 button1 = Button(root, text="Get chart")
 button1.columnconfigure(0, weight=0)
 button1.place(x=0, y=35)
-# button1['command'] = 
+button1['command'] = lambda:displayChartWithSignals(clicked1.get(), timeFrame1.get()) 
 
 dropTf1 = OptionMenu(root, timeFrame1, *timeFrames)
 dropTf1.config(width=10, bg="blue", foreground="white")

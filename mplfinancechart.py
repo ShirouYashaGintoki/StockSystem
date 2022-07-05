@@ -59,7 +59,7 @@ headers = {
 }
 
 
-querystring = {"symbol":"NFLX","interval":"1h","outputsize":"30","format":"json"}
+querystring = {"symbol":"NFLX","interval":"1h","outputsize":"60","format":"json"}
 response = requests.request("GET", url, headers=headers, params=querystring)
 jsonResponse = response.json()
 df2 = json_normalize(jsonResponse, 'values')
@@ -134,7 +134,7 @@ print(f'{sellPoints} / {len(sellPoints)}')
 buy_markers = mpf.make_addplot(buyPoints, type='scatter', markersize=120, marker='^')
 sell_markers = mpf.make_addplot(sellPoints, type='scatter', markersize=120, marker='v')
 apds = [buy_markers, sell_markers]
-mpf.plot(df3, type="candle", addplot=apds)
+mpf.plot(df2, type="candle", addplot=apds)
 
 
 # mf.plot(df2)
