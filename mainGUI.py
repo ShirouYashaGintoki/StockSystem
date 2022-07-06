@@ -194,12 +194,12 @@ def displayChartWithSignals(ticker, timeframe):
                     continue
                else:
                     if results.selector.iloc[i] == "BUY":
-                         buyPoints.append(results.close.iloc[i])
+                         buyPoints.append(results.close.iloc[i] * 0.995)
                     else:
                          buyPoints.append(np.nan)
                     
                     if results.selector.iloc[i] == "SELL":
-                         sellPoints.append(results.close.iloc[i])
+                         sellPoints.append(results.close.iloc[i] * 1.005)
                     else:
                          sellPoints.append(np.nan)
 
@@ -208,15 +208,33 @@ def displayChartWithSignals(ticker, timeframe):
           buy_markers = mpf.make_addplot(buyPoints, type='scatter', markersize=120, marker='^')
           sell_markers = mpf.make_addplot(sellPoints, type='scatter', markersize=120, marker='v')
 
-          apds = [buy_markers, sell_markers]
-          mpf.plot(results, type="candle", addplot=apds)
-     except ValueError as val:
-          print("No signals to print, printing normal chart")
-          mpf.plot(results, type="candle")
+          
+          
+          if any(isinstance(j,float) for j in buyPoints) or any(isinstance(i,float) for i in sellPoints):
+               ema12 = results['EMA12']
+               ema26 = results['EMA26']
+               macd = results['MACD']
+               sigval = results['sigval']
+               apds = [
+                    mpf.make_addplot(buyPoints, type='scatter', markersize=120, marker='^'),
+                    mpf.make_addplot(sellPoints, type='scatter', markersize=120, marker='v'),
+                    mpf.make_addplot(ema12,color='lime'),
+                    mpf.make_addplot(ema26,color='c'),
+                    mpf.make_addplot(macd,panel=1,color='fuchsia',secondary_y=True),
+                    mpf.make_addplot(sigval,panel=1,color='b',secondary_y=True)
+               ]
+
+               mpf.plot(results,type='candle',addplot=apds,figscale=1.1,figratio=(8,5),title='\nMACD',
+               style='blueskies',panel_ratios=(6,3))
+               print("Integer found!")  
+          else:
+               apds = [buy_markers, sell_markers]
+               print("No signals to print, printing normal chart")
+               mpf.plot(results,type='candle',addplot=apds,figscale=1.1,figratio=(8,5),title='\nMACD',
+               style='blueskies',panel_ratios=(6,3))
      except Exception as e:
           messagebox.showerror("ERROR", """There is currently no data for this stock timeframe pairing.\nPlease wait until the next interval before trying again.""")
           print(e)
-          print(type(e))
      
 
 # df['col1'] = df['col1'].apply(complex_function)
