@@ -1,13 +1,11 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter import scrolledtext as st
-from unittest import result
 import pandas as pd
 from pandas import json_normalize
 import threading
 import time
 import numpy as np
-import datetime as dtOver
 from datetime import datetime as dtInner
 from dateutil import tz
 import requests
@@ -87,7 +85,7 @@ except Exception:
 db.close()
 
 # Dataframe to hold the records of the current signals to prevent duplicate signals
-currentSignals = pd.DataFrame(columns=["datetime", "assetname", "close", "ema12", "ema26", "macd", "sigval", "selector"])
+currentSignals = pd.DataFrame(columns=["datetime", "assetname", "open", "high", "low", "close", "volume", "ema12", "ema26", "macd", "sigval", "selector"])
 
 # Function to create a table in the database
 # for a given asset and timeframe combination
@@ -112,7 +110,11 @@ def createTable(assetName, timeFrame):
           rowid INT AUTO_INCREMENT PRIMARY KEY,
           datetime DATETIME,
           assetname varchar(50),
+          open FLOAT(5),
+          high FLOAT(5),
+          low FLOAT(5),
           close FLOAT(5),
+          volume INT(7),
           ema12 FLOAT(2),
           ema26 FLOAT(2),
           macd FLOAT(7),
@@ -208,10 +210,13 @@ def displayChartWithSignals(ticker, timeframe):
 
           apds = [buy_markers, sell_markers]
           mpf.plot(results, type="candle", addplot=apds)
+     except ValueError as val:
+          print("No signals to print, printing normal chart")
+          mpf.plot(results, type="candle")
      except Exception as e:
-          messagebox.showerror("ERROR", """There is currently no data for this stock/
-          timeframe pairing.\nPlease wait until the next interval before trying again.""")
+          messagebox.showerror("ERROR", """There is currently no data for this stock timeframe pairing.\nPlease wait until the next interval before trying again.""")
           print(e)
+          print(type(e))
      
 
 # df['col1'] = df['col1'].apply(complex_function)
@@ -254,8 +259,8 @@ def calculateAndInsert(asset, period):
           # Use built in Pandas function to normalize the json response into a dataframe
           df2 = json_normalize(jsonResponse, 'values')
           # print(tabulate(df2, showindex=False, headers=list(df2.columns)))
-          # Drop unecessary columns
-          df2.drop(['open', 'high', 'low', 'volume'], axis=1, inplace=True)
+          # Drop unecessary columns -> removed for mplfinance to work
+          # df2.drop(['open', 'high', 'low', 'volume'], axis=1, inplace=True)
           # Change index to datetime to be able to order by date
           # df2.set_index('datetime', inplace=True)
           # As data from the API comes earliest date first, in order to analyse it, it must be reversed
@@ -280,7 +285,7 @@ def calculateAndInsert(asset, period):
           # df2['datetime'] = df2.apply(lambda x: convertTimezone(x['datetime']), axis=1)
           # df2['datetime'] = np.vectorize(convertTimezone)(df2['datetime'])
 
-          print("No converting timezone, index reset")
+          print("No converting timezone, index reset before assigning selector, after calculations")
           df2.set_index('datetime', inplace=True)
           print(tabulate(df2, showindex=True, headers=list(df2.columns)))
 
@@ -290,9 +295,9 @@ def calculateAndInsert(asset, period):
                # print(f'Sigval: {df2.sigval.iloc[i]}/, {type({df2.sigval.iloc[i]})}')
 
                if df2.MACD.iloc[i] > df2.sigval.iloc[i] and df2.MACD.iloc[i-1] < df2.sigval.iloc[i-1]:
-                    df2.iloc[[i], 6] = 'BUY'
+                    df2.iloc[[i], 10] = 'BUY'
                elif df2.MACD.iloc[i] < df2.sigval.iloc[i] and df2.MACD.iloc[i-1] > df2.sigval.iloc[i-1]:
-                    df2.iloc[[i], 6] = 'SELL'
+                    df2.iloc[[i], 10] = 'SELL'
 
           df2.to_sql((asset.lower()+period), engine, if_exists="append")
           # Try to remove any duplicates from the table (For some reason replace wont work)
@@ -309,7 +314,7 @@ def calculateAndInsert(asset, period):
                print("Removing duplicates if any exist from stocktables."+(asset+period).lower())
 
                # Execute query to delete duplicate records from the given table
-               my_cursor.execute("""DELETE FROM stocktables.%s WHERE rowid NOT IN (SELECT * FROM (SELECT Max(rowid) FROM %s GROUP BY datetime, assetname, close, selector) AS t);""" %((asset+period).lower(), (asset+period).lower()))
+               my_cursor.execute("""DELETE FROM stocktables.%s WHERE rowid NOT IN (SELECT * FROM (SELECT Max(rowid) FROM %s GROUP BY datetime, assetname, open, high, low, close, volume, selector) AS t);""" %((asset+period).lower(), (asset+period).lower()))
 
                # Commit changes to db
                db.commit()
@@ -331,7 +336,7 @@ def displayResults(dfOfSignals):
           # Query dataframe argument to select only signal records
           results = dfOfSignals.query('selector == "BUY" or selector == "SELL"')
           # Drop the rowid to compare with currentSignals
-          results = results.drop(['rowid'], axis=1, errors='ignore')
+          # results = results.drop(['rowid'], axis=1, errors='ignore')
           results.sort_values(by=['datetime'])
           # Print results for checking
           print("Initial results")
@@ -360,9 +365,9 @@ def displayResults(dfOfSignals):
           if not results.empty:
                print(tabulate(results, showindex=False, headers=results.columns))
                for row in results.itertuples():
-                    if row[8] == "BUY":
+                    if row[10] == "BUY":
                          displayBox.configure(state="normal")
-                         assetName = row[2]
+                         assetName = row[5]
                          signalDt = row[1]
                          closePrice = row[3]
                          assetInputString = f'BUY: {assetName}\n'
@@ -501,7 +506,7 @@ def getData(tf):
           for asset in symbolsToGet:
                try:
                     calculateAndInsert(asset, tf)
-                    returnedDf = retrieveDataOneTf()(symbolsToGet, tf)
+                    returnedDf = retrieveDataOneTf(symbolsToGet, tf)
                     displayResults(returnedDf)
                     # print(tabulate(returnedDf, showindex=False, headers=returnedDf.columns))
                     # print(tabulate(df2, showindex=False, headers=list(df2.columns)))
@@ -517,7 +522,8 @@ def getData(tf):
 # Define callback function
 # Args
 # clicker = The StringVar associated with the stock dropdown box
-# timeframe = The StringVar associated with the timeframe dropdown box
+# timeframe = The StringVar associated with the timeframe 
+# down box
 # clickername = The name identifying the dropdown box being changed
 def callback1(clicker, timeframe, clickerName):
      # When dropdown is changed, check if its combo exists

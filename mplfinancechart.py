@@ -76,9 +76,13 @@ df2['volume'].apply(lambda x: '%.12f' % x)
 # _5minThread = RepeatedTimer(5, printSomething)
 
 df2['EMA12'] = df2.close.ewm(span=12).mean()
+ema12 = df2.close.ewm(span=12).mean()
 df2['EMA26'] = df2.close.ewm(span=26).mean()
+ema26 = df2.close.ewm(span=26).mean()
 df2['MACD'] = df2.EMA12 - df2.EMA26
+macd = df2.EMA12 - df2.EMA26
 df2['sigval'] = df2.MACD.ewm(span=9).mean()
+sigval = df2.MACD.ewm(span=9).mean()
 df2['selector'] = ""
 
 buyPoints = []
@@ -110,10 +114,10 @@ sellSignals = df2.query('selector == "SELL"')
 buyValues = buySignals['close'].tolist()
 sellValues = sellSignals['close'].tolist()
 
-buy_markers = mpf.make_addplot(buyPoints, type='scatter', markersize=120, marker='^')
-sell_markers = mpf.make_addplot(sellPoints, type='scatter', markersize=120, marker='v')
+# buy_markers = mpf.make_addplot(buyPoints, type='scatter', markersize=120, marker='^')
+# sell_markers = mpf.make_addplot(sellPoints, type='scatter', markersize=120, marker='v')
 
-apds = [buy_markers, sell_markers]
+# apds = [buy_markers, sell_markers]
 df3 = df2
 df3.drop(['EMA12', 'EMA26', 'MACD', 'sigval', 'selector'], axis=1, inplace=True)
 
@@ -131,10 +135,20 @@ print('size of y = {0}'.format(df2['close'].size))
 print(f'{buyPoints} / {len(buyPoints)}')
 print(f'{sellPoints} / {len(sellPoints)}')
 
-buy_markers = mpf.make_addplot(buyPoints, type='scatter', markersize=120, marker='^')
-sell_markers = mpf.make_addplot(sellPoints, type='scatter', markersize=120, marker='v')
-apds = [buy_markers, sell_markers]
-mpf.plot(df2, type="candle", addplot=apds)
+# MACD WORKS -> REMEMBER THIS
+
+apds = [
+          mpf.make_addplot(buyPoints, type='scatter', markersize=120, marker='^'),
+          mpf.make_addplot(sellPoints, type='scatter', markersize=120, marker='v'),
+          mpf.make_addplot(ema12,color='lime'),
+          mpf.make_addplot(ema26,color='c'),
+          mpf.make_addplot(macd,panel=1,color='fuchsia',secondary_y=True),
+          mpf.make_addplot(sigval,panel=1,color='b',secondary_y=True)
+]
+
+mpf.plot(df2,type='candle',addplot=apds,figscale=1.1,figratio=(8,5),title='\nMACD',
+         style='blueskies',panel_ratios=(6,3))
+
 
 
 # mf.plot(df2)
