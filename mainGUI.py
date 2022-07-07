@@ -384,24 +384,24 @@ def displayResults(dfOfSignals):
           if not results.empty:
                print(tabulate(results, showindex=False, headers=results.columns))
                for row in results.itertuples():
-                    if row[10] == "BUY":
+                    if row[13] == "BUY":
                          displayBox.configure(state="normal")
-                         assetName = row[5]
-                         signalDt = row[1]
-                         closePrice = row[3]
+                         assetName = row[3]
+                         signalDt = row[2]
+                         closePrice = row[7]
                          assetInputString = f'BUY: {assetName}\n'
                          displayBox.insert('end', assetInputString, 'BUY')
-                         inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {str(closePrice)}\n---------------------------------------------\n"""
+                         inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {closePrice:.2f}\n---------------------------------------------\n"""
                          displayBox.insert('end', inputString)
                          print(inputString)
-                    elif row[8] == "SELL":
+                    elif row[13] == "SELL":
                          displayBox.configure(state="normal")
-                         assetName = row[2]
-                         signalDt = row[1]
-                         closePrice = row[3]
+                         assetName = row[3]
+                         signalDt = row[2]
+                         closePrice = row[7]
                          assetInputString = f'SELL: {assetName}\n'
                          displayBox.insert('end', assetInputString, 'SELL')
-                         inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {str(closePrice)}\n---------------------------------------------\n"""
+                         inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {closePrice:.2f}\n---------------------------------------------\n"""
                          displayBox.insert('end', inputString)
                          print(inputString)
                displayBox.configure(state="disabled")
