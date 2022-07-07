@@ -174,13 +174,15 @@ def displayChartWithSignals(ticker, timeframe):
           results = retrieveDataOneTf([indDict[ticker]], timeframe)
           results.index = pd.DatetimeIndex(results['datetime'])
           results.drop(['datetime'], axis=1, inplace=True)
-          print(results)
           results['open'] = results['open'].apply(makeFloat)
           results['high'] = results['high'].apply(makeFloat)
           results['low'] = results['low'].apply(makeFloat)
           results['close'] = results['close'].apply(makeFloat)
           results['volume'] = results['volume'].apply(makeInt)
           results['volume'].apply(lambda x: '%.12f' % x)
+          print("Results for chart")
+          results = results.iloc[::-1]
+          print(results)
 
           buyPoints = []
           sellPoints = []
@@ -697,6 +699,7 @@ drop2.place(x=0, y=80)
 button2 = Button(root, text="Get chart")
 button2.columnconfigure(0, weight=0)
 button2.place(x=0, y=115)
+button2['command'] = lambda:displayChartWithSignals(clicked1.get(), timeFrame1.get()) 
 
 dropTf2 = OptionMenu(root, timeFrame2, *timeFrames)
 dropTf2.config(width=10, bg="blue", foreground="white")
@@ -711,6 +714,7 @@ drop3.place(x=0, y=160)
 button3 = Button(root, text="Get chart")
 button3.columnconfigure(0, weight=0)
 button3.place(x=0, y=195)
+button3['command'] = lambda:displayChartWithSignals(clicked1.get(), timeFrame1.get()) 
 
 dropTf3 = OptionMenu(root, timeFrame3, *timeFrames)
 dropTf3.config(width=10, bg="blue", foreground="white")
@@ -725,6 +729,7 @@ drop4.place(x=0, y=240)
 button4 = Button(root, text="Get chart")
 button4.columnconfigure(0, weight=0)
 button4.place(x=0, y=275)
+button4['command'] = lambda:displayChartWithSignals(clicked1.get(), timeFrame1.get())
 
 dropTf4 = OptionMenu(root, timeFrame4, *timeFrames)
 dropTf4.config(width=10, bg="blue", foreground="white")
@@ -739,6 +744,7 @@ drop5.place(x=0, y=320)
 button5 = Button(root, text="Get chart")
 button5.columnconfigure(0, weight=0)
 button5.place(x=0, y=355)
+button5['command'] = lambda:displayChartWithSignals(clicked1.get(), timeFrame1.get()) 
 
 dropTf5 = OptionMenu(root, timeFrame5, *timeFrames)
 dropTf5.config(width=10, bg="blue", foreground="white")

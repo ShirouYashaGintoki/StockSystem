@@ -59,7 +59,7 @@ headers = {
 }
 
 
-querystring = {"symbol":"NFLX","interval":"1h","outputsize":"60","format":"json"}
+querystring = {"symbol":"TSLA","interval":"5min","outputsize":"30","format":"json"}
 response = requests.request("GET", url, headers=headers, params=querystring)
 jsonResponse = response.json()
 df2 = json_normalize(jsonResponse, 'values')
@@ -140,8 +140,6 @@ print(f'{sellPoints} / {len(sellPoints)}')
 apds = [
           mpf.make_addplot(buyPoints, type='scatter', markersize=120, marker='^'),
           mpf.make_addplot(sellPoints, type='scatter', markersize=120, marker='v'),
-          mpf.make_addplot(ema12,color='lime'),
-          mpf.make_addplot(ema26,color='c'),
           mpf.make_addplot(macd,panel=1,color='fuchsia',secondary_y=True),
           mpf.make_addplot(sigval,panel=1,color='b',secondary_y=True)
 ]
