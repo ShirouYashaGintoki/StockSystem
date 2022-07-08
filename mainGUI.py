@@ -15,6 +15,7 @@ import sqlalchemy
 import pymysql
 import traceback
 import mplfinance as mpf
+from configparser import ConfigParser
 
 
 # URL for API
@@ -64,12 +65,14 @@ ukFormat = "%d-%m-%Y %H:%M:%S"
 local_zone = tz.tzlocal()
 
 # beansontoastA1? for PC
-# dspA123 for laptop
 # Establish connection using mysql connector
+config_object = ConfigParser()
+config_object.read("config.ini")
+dbInfo = config_object['DATABASE']
 db = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    passwd="beansontoastA1?"
+    host=dbInfo['host'],
+    user=dbInfo['user'],
+    passwd=dbInfo['password']
 )
 
 # Create cursor
@@ -538,7 +541,14 @@ def getData(tf):
           print("30MIN interval reached")
      if tf == "1HOUR":
           print("1HOUR interval reached")
-     
+
+def saveConfig():
+     config_object = ConfigParser()
+     config_object.read("config.ini")
+     pass
+
+def loadConfig():
+     pass
           
 # Define callback function
 # Args
@@ -665,6 +675,9 @@ timeFrame4.trace_add("write", lambda var_name, var_index, operation: callback2(c
 def testButton(stock, time):
      print(stock, time)
 
+def buttonTest():
+     print("This button works")
+
 # Stock 5
 #####################################
 clicked5.set(stockNameList[4])
@@ -699,7 +712,7 @@ drop2.place(x=0, y=80)
 button2 = Button(root, text="Get chart")
 button2.columnconfigure(0, weight=0)
 button2.place(x=0, y=115)
-button2['command'] = lambda:displayChartWithSignals(clicked1.get(), timeFrame1.get()) 
+button2['command'] = lambda:displayChartWithSignals(clicked2.get(), timeFrame2.get()) 
 
 dropTf2 = OptionMenu(root, timeFrame2, *timeFrames)
 dropTf2.config(width=10, bg="blue", foreground="white")
@@ -714,7 +727,7 @@ drop3.place(x=0, y=160)
 button3 = Button(root, text="Get chart")
 button3.columnconfigure(0, weight=0)
 button3.place(x=0, y=195)
-button3['command'] = lambda:displayChartWithSignals(clicked1.get(), timeFrame1.get()) 
+button3['command'] = lambda:displayChartWithSignals(clicked3.get(), timeFrame3.get()) 
 
 dropTf3 = OptionMenu(root, timeFrame3, *timeFrames)
 dropTf3.config(width=10, bg="blue", foreground="white")
@@ -729,7 +742,7 @@ drop4.place(x=0, y=240)
 button4 = Button(root, text="Get chart")
 button4.columnconfigure(0, weight=0)
 button4.place(x=0, y=275)
-button4['command'] = lambda:displayChartWithSignals(clicked1.get(), timeFrame1.get())
+button4['command'] = lambda:displayChartWithSignals(clicked4.get(), timeFrame4.get())
 
 dropTf4 = OptionMenu(root, timeFrame4, *timeFrames)
 dropTf4.config(width=10, bg="blue", foreground="white")
@@ -744,13 +757,21 @@ drop5.place(x=0, y=320)
 button5 = Button(root, text="Get chart")
 button5.columnconfigure(0, weight=0)
 button5.place(x=0, y=355)
-button5['command'] = lambda:displayChartWithSignals(clicked1.get(), timeFrame1.get()) 
+button5['command'] = lambda:displayChartWithSignals(clicked5.get(), timeFrame5.get()) 
 
 dropTf5 = OptionMenu(root, timeFrame5, *timeFrames)
 dropTf5.config(width=10, bg="blue", foreground="white")
 dropTf5.place(x=90, y=352)
 
 ########################################################
+
+saveConfig = Button(root, text="Save Selections", command=buttonTest)
+saveConfig.config(width=15, bg="white", foreground="black")
+saveConfig.place(x=440, y=570)
+
+loadConfig = Button(root, text="Load Selections", command=buttonTest)
+loadConfig.config(width=15, bg="white", foreground="black")
+loadConfig.place(x=320, y=570)
 
 exitButton = Button(root, text="Exit", command=root.destroy)
 exitButton.config(width=10, bg="red", foreground="white")
