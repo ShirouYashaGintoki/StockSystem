@@ -67,63 +67,6 @@ apiFormat = "%Y-%m-%d %H:%M:%S"
 ukFormat = "%d-%m-%Y %H:%M:%S"
 local_zone = tz.tzlocal()
 
-def saveConfig():
-     config_object = ConfigParser()
-     config_object.read("config.ini")
-
-     configData = config_object["STOCKCONFIG"]
-
-     configData["stock1"] = clicked1.get()
-     configData["time1"] = timeFrame1.get()
-
-     configData["stock2"] = clicked2.get()
-     configData["time2"] = timeFrame2.get()
-
-     configData["stock3"] = clicked3.get()
-     configData["time3"] = timeFrame3.get()
-
-     configData["stock4"] = clicked4.get()
-     configData["time4"] = timeFrame4.get()
-
-     configData["stock5"] = clicked5.get()
-     configData["time5"] = timeFrame5.get()
-
-     with open('config.ini', 'w') as conf:
-          config_object.write(conf)
-     conf.close()
-     print("Config written to!")
-
-def loadConfig():
-     config_object = ConfigParser()
-     config_object.read("config.ini")
-
-     configData = config_object["STOCKCONFIG"]
-     clicked1.set(configData["stock1"])
-     timeFrame1.set(configData["time1"])
-
-     clicked2.set(configData["stock2"])
-     timeFrame2.set(configData["time2"])
-
-     clicked3.set(configData["stock3"])
-     timeFrame3.set(configData["time3"])
-
-     clicked4.set(configData["stock4"])
-     timeFrame4.set(configData["time4"])
-
-     clicked5.set(configData["stock5"])
-     timeFrame5.set(configData["time5"])
-     print("Config loaded!")
-
-try:
-     loadConfig()
-     print("Config found! Loading")
-except Exception as e:
-     print("No config file found")
-     print(e)
-     ftConfigSetup()
-     print("Config created!")
-
-
 # beansontoastA1? for PC
 # Establish connection using mysql connector
 config_object = ConfigParser()
@@ -200,19 +143,6 @@ def makeFloat(given):
 def makeInt(given):
      fixed = int(given)
      return fixed
-
-# def retrieveSignalDates(listOfAssets, timeframe):
-#      engine = sqlalchemy.create_engine('mysql://root:beansontoastA1?@localhost:3306/stocktables')
-#      listOfFrames = []
-#      for asset in listOfAssets:
-#           query = f'''
-#           SELECT *
-#           FROM {asset+timeframe}
-#           WHERE selector = "BUY" OR selector = "SELL"
-#           ORDER BY datetime DESC;'''
-#           df = pd.read_sql(query, engine)
-#           listOfFrames.append(df)
-#      return pd.concat(listOfFrames)
 
 def retrieveDataOneTf(listOfAssets, timeframe):
      pymysql.install_as_MySQLdb()
@@ -676,6 +606,53 @@ def callback2(clicker, timeframe, clickerName):
           print(f'drop variable has been changed to {timeframe.get()}')
           print([clicker.get(), timeframe.get()])
 
+     
+def saveConfig():
+     config_object = ConfigParser()
+     config_object.read("config.ini")
+
+     configData = config_object["STOCKCONFIG"]
+
+     configData["stock1"] = clicked1.get()
+     configData["time1"] = timeFrame1.get()
+
+     configData["stock2"] = clicked2.get()
+     configData["time2"] = timeFrame2.get()
+
+     configData["stock3"] = clicked3.get()
+     configData["time3"] = timeFrame3.get()
+
+     configData["stock4"] = clicked4.get()
+     configData["time4"] = timeFrame4.get()
+
+     configData["stock5"] = clicked5.get()
+     configData["time5"] = timeFrame5.get()
+
+     with open('config.ini', 'w') as conf:
+          config_object.write(conf)
+     conf.close()
+     print("Config written to!")
+
+def loadConfig():
+     config_object = ConfigParser()
+     config_object.read("config.ini")
+
+     configData = config_object["STOCKCONFIG"]
+     clicked1.set(configData["stock1"])
+     timeFrame1.set(configData["time1"])
+
+     clicked2.set(configData["stock2"])
+     timeFrame2.set(configData["time2"])
+
+     clicked3.set(configData["stock3"])
+     timeFrame3.set(configData["time3"])
+
+     clicked4.set(configData["stock4"])
+     timeFrame4.set(configData["time4"])
+
+     clicked5.set(configData["stock5"])
+     timeFrame5.set(configData["time5"])
+     print("Config loaded!")
 
 # Stock 1
 #####################################
@@ -726,13 +703,6 @@ clicked4.trace_add("write", lambda var_name, var_index, operation: callback1(cli
 timeFrame4.trace_add("write", lambda var_name, var_index, operation: callback2(clicked4, timeFrame4, "clicked4"))
 #####################################
 
-
-def testButton(stock, time):
-     print(stock, time)
-
-def buttonTest():
-     print("This button works")
-
 # Stock 5
 #####################################
 clicked5.set(stockNameList[4])
@@ -741,7 +711,7 @@ srtCombo["clicked5"][0] = clicked5.get()
 srtCombo["clicked5"][2] = timeFrame5.get()
 srtCombo["clicked5"][4] = clicked5.get()
 srtCombo["clicked5"][5] = timeFrame5.get()
-clicked5.trace_add("write", lambda : callback1(clicked5, timeFrame5, "clicked5"))
+clicked5.trace_add("write", lambda var_name, var_index, operation : callback1(clicked5, timeFrame5, "clicked5"))
 timeFrame5.trace_add("write", lambda var_name, var_index, operation: callback2(clicked5, timeFrame5, "clicked5"))
 #####################################
 stockNameList
