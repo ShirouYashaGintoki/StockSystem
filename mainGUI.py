@@ -16,6 +16,7 @@ import pymysql
 import traceback
 import mplfinance as mpf
 from configparser import ConfigParser
+from setupConfigFile import ftConfigSetup
 
 
 # URL for API
@@ -35,15 +36,17 @@ indDict = pd.Series(indices.Symbol.values, index=indices.CompanyName).to_dict()
 stockNameList = sorted(list(indDict.keys()))
 # print(f'{stockNameList}')
 
-# Tickers is a list of symbols as strings from the 'Symbol' column
-# of the dataframe 'indices'
-# tickers = sorted(indices['Symbol'])
-
 # List of timeframes, to be changed to 5min, 30min, 1h
 # 1h has a time signal of HH:30
 # 30min is anything either HH:00 or HH:30
 # 5min has anything that is a multiple of 5
 timeFrames = ['5MIN', '30MIN', '1HOUR']
+
+timeframeDict = {
+     "5MIN":"5min",
+     "30MIN":"30min",
+     "1HOUR":"1h"
+}
 
 # Dictionary to handle rotation of stock, time
 # and the current stock/time combination
@@ -64,6 +67,63 @@ apiFormat = "%Y-%m-%d %H:%M:%S"
 ukFormat = "%d-%m-%Y %H:%M:%S"
 local_zone = tz.tzlocal()
 
+def saveConfig():
+     config_object = ConfigParser()
+     config_object.read("config.ini")
+
+     configData = config_object["STOCKCONFIG"]
+
+     configData["stock1"] = clicked1.get()
+     configData["time1"] = timeFrame1.get()
+
+     configData["stock2"] = clicked2.get()
+     configData["time2"] = timeFrame2.get()
+
+     configData["stock3"] = clicked3.get()
+     configData["time3"] = timeFrame3.get()
+
+     configData["stock4"] = clicked4.get()
+     configData["time4"] = timeFrame4.get()
+
+     configData["stock5"] = clicked5.get()
+     configData["time5"] = timeFrame5.get()
+
+     with open('config.ini', 'w') as conf:
+          config_object.write(conf)
+     conf.close()
+     print("Config written to!")
+
+def loadConfig():
+     config_object = ConfigParser()
+     config_object.read("config.ini")
+
+     configData = config_object["STOCKCONFIG"]
+     clicked1.set(configData["stock1"])
+     timeFrame1.set(configData["time1"])
+
+     clicked2.set(configData["stock2"])
+     timeFrame2.set(configData["time2"])
+
+     clicked3.set(configData["stock3"])
+     timeFrame3.set(configData["time3"])
+
+     clicked4.set(configData["stock4"])
+     timeFrame4.set(configData["time4"])
+
+     clicked5.set(configData["stock5"])
+     timeFrame5.set(configData["time5"])
+     print("Config loaded!")
+
+try:
+     loadConfig()
+     print("Config found! Loading")
+except Exception as e:
+     print("No config file found")
+     print(e)
+     ftConfigSetup()
+     print("Config created!")
+
+
 # beansontoastA1? for PC
 # Establish connection using mysql connector
 config_object = ConfigParser()
@@ -74,6 +134,7 @@ db = mysql.connector.connect(
     user=dbInfo['user'],
     passwd=dbInfo['password']
 )
+
 
 # Create cursor
 my_cursor = db.cursor()
@@ -89,6 +150,7 @@ db.close()
 
 # Dataframe to hold the records of the current signals to prevent duplicate signals
 currentSignals = pd.DataFrame(columns=["datetime", "assetname", "open", "high", "low", "close", "volume", "ema12", "ema26", "macd", "sigval", "selector"])
+
 
 # Function to create a table in the database
 # for a given asset and timeframe combination
@@ -542,13 +604,6 @@ def getData(tf):
      if tf == "1HOUR":
           print("1HOUR interval reached")
 
-def saveConfig():
-     config_object = ConfigParser()
-     config_object.read("config.ini")
-     pass
-
-def loadConfig():
-     pass
           
 # Define callback function
 # Args
@@ -765,11 +820,11 @@ dropTf5.place(x=90, y=352)
 
 ########################################################
 
-saveConfig = Button(root, text="Save Selections", command=buttonTest)
+saveConfig = Button(root, text="Save Selections", command=saveConfig)
 saveConfig.config(width=15, bg="white", foreground="black")
 saveConfig.place(x=440, y=570)
 
-loadConfig = Button(root, text="Load Selections", command=buttonTest)
+loadConfig = Button(root, text="Load Selections", command=loadConfig)
 loadConfig.config(width=15, bg="white", foreground="black")
 loadConfig.place(x=320, y=570)
 
