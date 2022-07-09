@@ -42,10 +42,10 @@ stockNameList = sorted(list(indDict.keys()))
 # 5min has anything that is a multiple of 5
 timeFrames = ['5MIN', '30MIN', '1HOUR']
 
-timeframeDict = {
-     "5MIN":"5min",
-     "30MIN":"30min",
-     "1HOUR":"1h"
+timeFrameDict = {
+     "5MIN" : "5min",
+     "30MIN" : "30min",
+     "1HOUR" : "1h"
 }
 
 # Dictionary to handle rotation of stock, time
@@ -509,30 +509,85 @@ def syncTiming60():
      actualSeconds = ((diff * 60) - seconds) + 1
      return(actualSeconds)
 
+
 def getData(tf):
-     if tf == "5min" :
-          print("5MIN interval reached")
-          symbolsToGet = []
-          for key in srtCombo:
-               if srtCombo[key][5] == "5MIN":
-                    symbolsToGet.append(indDict[srtCombo[key][4]])
-          print(symbolsToGet)
-          for assetName in symbolsToGet:
-               createTable(assetName, tf)
-          for asset in symbolsToGet:
-               try:
-                    calculateAndInsert(asset, tf)
-                    returnedDf = retrieveDataOneTf(symbolsToGet, tf)
-                    displayResults(returnedDf)
-                    # print(tabulate(returnedDf, showindex=False, headers=returnedDf.columns))
-                    # print(tabulate(df2, showindex=False, headers=list(df2.columns)))
-               except Exception as e:
-                    print(f'There has been an error: {e}')
-                    print(traceback.format_exc())
-     if tf == "30MIN":
-          print("30MIN interval reached")
-     if tf == "1HOUR":
-          print("1HOUR interval reached")
+     apiArgTf = timeFrameDict[tf]
+     symbolsToGet = []
+     for key in srtCombo:
+          if srtCombo[key][5] == tf:
+               symbolsToGet.append(indDict[srtCombo[key][4]])
+     print(symbolsToGet)
+     for assetName in symbolsToGet:
+          createTable(assetName, apiArgTf)
+     for asset in symbolsToGet:
+          try:
+               calculateAndInsert(asset, apiArgTf)
+               returnedDf = retrieveDataOneTf(symbolsToGet, apiArgTf)
+               displayResults(returnedDf)
+               # print(tabulate(returnedDf, showindex=False, headers=returnedDf.columns))
+               # print(tabulate(df2, showindex=False, headers=list(df2.columns)))
+          except Exception as e:
+               print(f'There has been an error: {e}')
+               print(traceback.format_exc())
+
+# def getData(tf):
+#      if tf == "5min" :
+#           print("5MIN interval reached")
+#           symbolsToGet = []
+#           for key in srtCombo:
+#                if srtCombo[key][5] == "5MIN":
+#                     symbolsToGet.append(indDict[srtCombo[key][4]])
+#           print(symbolsToGet)
+#           for assetName in symbolsToGet:
+#                createTable(assetName, tf)
+#           for asset in symbolsToGet:
+#                try:
+#                     calculateAndInsert(asset, tf)
+#                     returnedDf = retrieveDataOneTf(symbolsToGet, tf)
+#                     displayResults(returnedDf)
+#                     # print(tabulate(returnedDf, showindex=False, headers=returnedDf.columns))
+#                     # print(tabulate(df2, showindex=False, headers=list(df2.columns)))
+#                except Exception as e:
+#                     print(f'There has been an error: {e}')
+#                     print(traceback.format_exc())
+#      if tf == "30MIN":
+#           print("30MIN interval reached")
+#           symbolsToGet = []
+#           for key in srtCombo:
+#                if srtCombo[key][5] == "30MIN":
+#                     symbolsToGet.append(indDict[srtCombo[key][4]])
+#           print(symbolsToGet)
+#           for assetName in symbolsToGet:
+#                createTable(assetName, "30min")
+#           for asset in symbolsToGet:
+#                try:
+#                     calculateAndInsert(asset, "30min")
+#                     returnedDf = retrieveDataOneTf(symbolsToGet, "30min")
+#                     displayResults(returnedDf)
+#                     # print(tabulate(returnedDf, showindex=False, headers=returnedDf.columns))
+#                     # print(tabulate(df2, showindex=False, headers=list(df2.columns)))
+#                except Exception as e:
+#                     print(f'There has been an error: {e}')
+#                     print(traceback.format_exc())
+#      if tf == "1HOUR":
+#           print("1HOUR interval reached")
+#           symbolsToGet = []
+#           for key in srtCombo:
+#                if srtCombo[key][5] == "1HOUR":
+#                     symbolsToGet.append(indDict[srtCombo[key][4]])
+#           print(symbolsToGet)
+#           for assetName in symbolsToGet:
+#                createTable(assetName, "1h")
+#           for asset in symbolsToGet:
+#                try:
+#                     calculateAndInsert(asset, "1h")
+#                     returnedDf = retrieveDataOneTf(symbolsToGet, "1h")
+#                     displayResults(returnedDf)
+#                     # print(tabulate(returnedDf, showindex=False, headers=returnedDf.columns))
+#                     # print(tabulate(df2, showindex=False, headers=list(df2.columns)))
+#                except Exception as e:
+#                     print(f'There has been an error: {e}')
+#                     print(traceback.format_exc())
 
           
 # Define callback function
@@ -827,9 +882,9 @@ print(f'Five mins in: {fiveMinSyncTime} seconds')
 print(f'Thirty mins in: {thirtyMinSyncTime} seconds ')
 print(f'One hour in: {hourSyncTime} seconds')
 
-_5minThread = RepeatedTimer(fiveMinSyncTime, getData, "5min")
-_30minThread = RepeatedTimer(thirtyMinSyncTime, getData, "30min")
-_1hThread = RepeatedTimer(hourSyncTime, getData, "1hs")
+_5minThread = RepeatedTimer(fiveMinSyncTime, getData, "5MIN")
+_30minThread = RepeatedTimer(thirtyMinSyncTime, getData, "30MIN")
+_1hThread = RepeatedTimer(hourSyncTime, getData, "1HOUR")
 
 _5minThread.interval = 301
 _30minThread.interval = 1801
