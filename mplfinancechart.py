@@ -2,7 +2,6 @@ import pandas as pd
 from pandas import json_normalize
 import requests
 from tabulate import tabulate
-import matplotlib as plt
 import time
 import threading
 import numpy as np
@@ -59,7 +58,7 @@ headers = {
 }
 
 
-querystring = {"symbol":"TSLA","interval":"5min","outputsize":"30","format":"json"}
+querystring = {"symbol":"TSLA","interval":"1h","outputsize":"30","format":"json"}
 response = requests.request("GET", url, headers=headers, params=querystring)
 jsonResponse = response.json()
 df2 = json_normalize(jsonResponse, 'values')
@@ -132,21 +131,56 @@ print("------------------------------")
 print('size of x = {0}'.format(df2.index.size))
 print('size of y = {0}'.format(df2['close'].size))
 
-print(f'{buyPoints} / {len(buyPoints)}')
-print(f'{sellPoints} / {len(sellPoints)}')
-
 # MACD WORKS -> REMEMBER THIS
+global list1, list2
+list1 = [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
 
-apds = [
-          mpf.make_addplot(buyPoints, type='scatter', markersize=120, marker='^'),
-          mpf.make_addplot(sellPoints, type='scatter', markersize=120, marker='v'),
-          mpf.make_addplot(macd,panel=1,color='fuchsia',secondary_y=True),
-          mpf.make_addplot(sigval,panel=1,color='b',secondary_y=True)
-]
+list2 = [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, 115.4343, None, None, None, None]
 
-mpf.plot(df2,type='candle',addplot=apds,figscale=1.1,figratio=(8,5),title='\nMACD',
-         style='blueskies',panel_ratios=(6,3))
+print(f'{list1} / {len(list1)}')
+print(f'{list2} / {len(list2)}')
 
+# for obj in list2:
+#      if obj == None:
+#           print(f'{obj} is None')
+#      else:
+#           print(f'{obj} is {type(obj)}')
+
+if any(isinstance(j,float) for j in list1) and any(isinstance(i,float) for i in list2):
+     apds = [
+               mpf.make_addplot(list1, type='scatter', markersize=120, marker='^'),
+               mpf.make_addplot(list2, type='scatter', markersize=120, marker='v'),
+               mpf.make_addplot(macd,panel=1,color='fuchsia',secondary_y=True),
+               mpf.make_addplot(sigval,panel=1,color='b',secondary_y=True)
+     ]
+     print("Both true")
+     list1 = [np.nan if i is None else i for i in list1]
+     list2 = [np.nan if j is None else j for j in list2]
+     print(f'{list1} / {len(list1)}')
+     print(f'{list2} / {len(list2)}')
+else:
+     if any(isinstance(j,float) for j in list1) and not any(isinstance(i,float) for i in list2):
+          apds = [
+               mpf.make_addplot(list1, type='scatter', markersize=120, marker='^'),
+               mpf.make_addplot(macd,panel=1,color='fuchsia',secondary_y=True),
+               mpf.make_addplot(sigval,panel=1,color='b',secondary_y=True)
+          ]
+          print("List 1 true, list 2 false")
+          list1 = [np.nan if i is None else i for i in list1]
+          print(f'{list1} / {len(list1)}')
+     else:
+          apds = [
+               mpf.make_addplot(list2, type='scatter', markersize=120, marker='^'),
+               mpf.make_addplot(macd,panel=1,color='fuchsia',secondary_y=True),
+               mpf.make_addplot(sigval,panel=1,color='b',secondary_y=True)
+          ]
+          print("List 2 true, list 1 false")
+          list2 = [np.nan if j is None else j for j in list2]
+          print(f'{list2} / {len(list2)}')
+
+
+mpf.plot(df2,type='candle',addplot=apds,figscale=1.1,figratio=(8,5),title='\nmacd',
+     style='blueskies',panel_ratios=(6,3))
 
 
 # mf.plot(df2)

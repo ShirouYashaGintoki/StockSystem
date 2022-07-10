@@ -163,10 +163,9 @@ def retrieveDataOneTf(listOfAssets, timeframe):
 # timeframe -> Given timeframe
 def displayChartWithSignals(ticker, timeframe):
      try:
-          if timeframe == "5MIN":
-               timeframe = "5min"
+          accessTf = timeFrameDict[timeframe]
           # Retrieve last 30 (or 60) results from the database
-          results = retrieveDataOneTf([indDict[ticker]], timeframe)
+          results = retrieveDataOneTf([indDict[ticker]], accessTf)
           results.index = pd.DatetimeIndex(results['datetime'])
           results.drop(['datetime'], axis=1, inplace=True)
           results['open'] = results['open'].apply(makeFloat)
@@ -512,6 +511,7 @@ def syncTiming60():
 
 def getData(tf):
      apiArgTf = timeFrameDict[tf]
+     print(tf, apiArgTf)
      symbolsToGet = []
      for key in srtCombo:
           if srtCombo[key][5] == tf:
