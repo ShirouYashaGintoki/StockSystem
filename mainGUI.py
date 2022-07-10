@@ -201,38 +201,72 @@ def displayChartWithSignals(ticker, timeframe):
 
           print(buyPoints)
           print(sellPoints)
-          # ema12 = results.close.ewm(span=12).mean()
-          ema12 = results['ema12'].tolist()
-          # ema26 = results.close.ewm(span=26).mean()
-          ema26 = results['ema26'].tolist()
           # macd = results.ema12 - results.ema26
           macd = results['macd'].tolist()
           # sigval = results.macd.ewm(span=9).mean()
           sigval = results['sigval'].tolist()
-          if any(isinstance(j,float) for j in buyPoints) or any(isinstance(i,float) for i in sellPoints):
+          buyPoints = [None if i is np.nan else i for i in buyPoints]
+          buyPoints = [None if i is np.nan else i for i in sellPoints]
+          if any(isinstance(j, float) for j in buyPoints) and any(isinstance(i, float) for i in sellPoints):
+               print("Both true")
+               buyPoints = [np.nan if i is None else i for i in buyPoints]
+               sellPoints = [np.nan if j is None else j for j in sellPoints]
                apds = [
-                    mpf.make_addplot(buyPoints, type='scatter', markersize=120, marker='^'),
-                    mpf.make_addplot(sellPoints, type='scatter', markersize=120, marker='v'),
-                    mpf.make_addplot(macd,panel=1,color='fuchsia',secondary_y=True),
-                    mpf.make_addplot(sigval,panel=1,color='b',secondary_y=True)
+                    mpf.make_addplot(buyPoints, type="scatter", markersize=120, marker="^"),
+                    mpf.make_addplot(sellPoints, type="scatter", markersize=120, marker="v"),
+                    mpf.make_addplot(macd, panel=1, color="fuchsia", secondary_y=True),
+                    mpf.make_addplot(sigval, panel=1, color="b", secondary_y=True),
                ]
-
-               mpf.plot(results,type='candle',addplot=apds,figscale=1.1,figratio=(8,5),title='\n'+ticker+' '+ timeframe,
-               style='blueskies',panel_ratios=(6,3))
-               print("Integer found!")  
+               print(f"{buyPoints} / {len(buyPoints)}")
+               print(f"{sellPoints} / {len(sellPoints)}")
           else:
-               apds = [
-                    mpf.make_addplot(ema12,color='lime'),
-                    mpf.make_addplot(ema26,color='c'),
-                    mpf.make_addplot(macd,panel=1,color='fuchsia',secondary_y=True),
-                    mpf.make_addplot(sigval,panel=1,color='b',secondary_y=True)
-               ]
-               print("No signals to print, printing normal chart")
-               mpf.plot(results,type='candle',addplot=apds,figscale=1.1,figratio=(8,5),title='\n'+ticker+' '+ timeframe,
-               style='blueskies',panel_ratios=(6,3))
+               if any(isinstance(j, float) for j in buyPoints) and not any(isinstance(i, float) for i in sellPoints):
+                    print("List 1 true, list 2 false")
+                    buyPoints = [np.nan if i is None else i for i in buyPoints]
+                    apds = [
+                         mpf.make_addplot(buyPoints, type="scatter", markersize=120, marker="^"),
+                         mpf.make_addplot(macd, panel=1, color="fuchsia", secondary_y=True),
+                         mpf.make_addplot(sigval, panel=1, color="b", secondary_y=True),
+                    ]
+                    print(f"{buyPoints} / {len(buyPoints)}")
+               else:
+                    print("List 2 true, list 1 false")
+                    sellPoints = [np.NaN if j is None else j for j in sellPoints]
+                    apds = [
+                         mpf.make_addplot(sellPoints, type="scatter", markersize=120, marker="^"),
+                         mpf.make_addplot(macd, panel=1, color="fuchsia", secondary_y=True),
+                         mpf.make_addplot(sigval, panel=1, color="b", secondary_y=True),
+                    ]
+                    print(f"{sellPoints} / {len(sellPoints)}")
+          mpf.plot(results,type='candle',addplot=apds,figscale=1.1,figratio=(8,5),title='\n'+ticker+' '+ timeframe, style='blueskies',panel_ratios=(6,3))
      except Exception as e:
           messagebox.showerror("ERROR", """There is currently no data for this stock timeframe pairing.\nPlease wait until the next interval before trying again.""")
           print(e)
+
+          # if any(isinstance(j,float) for j in buyPoints) or any(isinstance(i,float) for i in sellPoints):
+          #      apds = [
+          #           mpf.make_addplot(buyPoints, type='scatter', markersize=120, marker='^'),
+          #           mpf.make_addplot(sellPoints, type='scatter', markersize=120, marker='v'),
+          #           mpf.make_addplot(macd,panel=1,color='fuchsia',secondary_y=True),
+          #           mpf.make_addplot(sigval,panel=1,color='b',secondary_y=True)
+          #      ]
+
+          #      mpf.plot(results,type='candle',addplot=apds,figscale=1.1,figratio=(8,5),title='\n'+ticker+' '+ timeframe,
+          #      style='blueskies',panel_ratios=(6,3))
+          #      print("Integer found!")  
+          # else:
+          #      apds = [
+          #           mpf.make_addplot(ema12,color='lime'),
+          #           mpf.make_addplot(ema26,color='c'),
+          #           mpf.make_addplot(macd,panel=1,color='fuchsia',secondary_y=True),
+          #           mpf.make_addplot(sigval,panel=1,color='b',secondary_y=True)
+          #      ]
+          #      print("No signals to print, printing normal chart")
+          #      mpf.plot(results,type='candle',addplot=apds,figscale=1.1,figratio=(8,5),title='\n'+ticker+' '+ timeframe,
+          #      style='blueskies',panel_ratios=(6,3))
+     # except Exception as e:
+     #      messagebox.showerror("ERROR", """There is currently no data for this stock timeframe pairing.\nPlease wait until the next interval before trying again.""")
+     #      print(e)
 
 # df['col1'] = df['col1'].apply(complex_function)
 # Function to convert given datetime from US/New York timezone

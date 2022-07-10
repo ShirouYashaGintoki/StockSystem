@@ -132,51 +132,44 @@ print('size of x = {0}'.format(df2.index.size))
 print('size of y = {0}'.format(df2['close'].size))
 
 # MACD WORKS -> REMEMBER THIS
-global list1, list2
-list1 = [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
 
-list2 = [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, 115.4343, None, None, None, None]
+print(f'{buyPoints} / {len(buyPoints)}')
+print(f'{sellPoints} / {len(sellPoints)}')
 
-print(f'{list1} / {len(list1)}')
-print(f'{list2} / {len(list2)}')
+buyPoints = [None if i is np.nan else i for i in buyPoints]
+sellPoints = [None if i is np.nan else i for i in sellPoints]
 
-# for obj in list2:
-#      if obj == None:
-#           print(f'{obj} is None')
-#      else:
-#           print(f'{obj} is {type(obj)}')
-
-if any(isinstance(j,float) for j in list1) and any(isinstance(i,float) for i in list2):
-     apds = [
-               mpf.make_addplot(list1, type='scatter', markersize=120, marker='^'),
-               mpf.make_addplot(list2, type='scatter', markersize=120, marker='v'),
-               mpf.make_addplot(macd,panel=1,color='fuchsia',secondary_y=True),
-               mpf.make_addplot(sigval,panel=1,color='b',secondary_y=True)
-     ]
+if any(isinstance(j,float) for j in buyPoints) and any(isinstance(i,float) for i in sellPoints):
      print("Both true")
-     list1 = [np.nan if i is None else i for i in list1]
-     list2 = [np.nan if j is None else j for j in list2]
-     print(f'{list1} / {len(list1)}')
-     print(f'{list2} / {len(list2)}')
+     buyPoints = [np.nan if i is None else i for i in buyPoints]
+     sellPoints = [np.nan if j is None else j for j in sellPoints]
+     apds = [
+               mpf.make_addplot(buyPoints, type='scatter', markersize=120, marker='^'),
+               mpf.make_addplot(sellPoints, type='scatter', markersize=120, marker='v'),
+               mpf.make_addplot(macd,panel=1,color='fuchsia',secondary_y=False),
+               mpf.make_addplot(sigval,panel=1,color='b',secondary_y=False)
+     ]
+     print(f'{buyPoints} / {len(buyPoints)}')
+     print(f'{sellPoints} / {len(sellPoints)}')
 else:
-     if any(isinstance(j,float) for j in list1) and not any(isinstance(i,float) for i in list2):
-          apds = [
-               mpf.make_addplot(list1, type='scatter', markersize=120, marker='^'),
-               mpf.make_addplot(macd,panel=1,color='fuchsia',secondary_y=True),
-               mpf.make_addplot(sigval,panel=1,color='b',secondary_y=True)
-          ]
+     if any(isinstance(j,float) for j in buyPoints) and not any(isinstance(i,float) for i in sellPoints):
           print("List 1 true, list 2 false")
-          list1 = [np.nan if i is None else i for i in list1]
-          print(f'{list1} / {len(list1)}')
-     else:
+          buyPoints = [np.nan if i is None else i for i in buyPoints]
           apds = [
-               mpf.make_addplot(list2, type='scatter', markersize=120, marker='^'),
-               mpf.make_addplot(macd,panel=1,color='fuchsia',secondary_y=True),
-               mpf.make_addplot(sigval,panel=1,color='b',secondary_y=True)
+               mpf.make_addplot(buyPoints, type='scatter', markersize=120, marker='^'),
+               mpf.make_addplot(macd,panel=1,color='fuchsia',secondary_y=False),
+               mpf.make_addplot(sigval,panel=1,color='b',secondary_y=False)
           ]
+          print(f'{buyPoints} / {len(buyPoints)}')
+     else:
           print("List 2 true, list 1 false")
-          list2 = [np.nan if j is None else j for j in list2]
-          print(f'{list2} / {len(list2)}')
+          sellPoints = [np.NaN if j is None else j for j in sellPoints]
+          apds = [
+               mpf.make_addplot(sellPoints, type='scatter', markersize=120, marker='^'),
+               mpf.make_addplot(macd,panel=1,color='fuchsia',secondary_y=False),
+               mpf.make_addplot(sigval,panel=1,color='b',secondary_y=False)
+          ]
+          print(f'{sellPoints} / {len(sellPoints)}')
 
 
 mpf.plot(df2,type='candle',addplot=apds,figscale=1.1,figratio=(8,5),title='\nmacd',
