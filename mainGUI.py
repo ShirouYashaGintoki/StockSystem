@@ -199,14 +199,14 @@ def displayChartWithSignals(ticker, timeframe):
                     else:
                          sellPoints.append(np.nan)
 
-          print(buyPoints)
-          print(sellPoints)
+          # print(buyPoints)
+          # print(sellPoints)
           # macd = results.ema12 - results.ema26
           macd = results['macd'].tolist()
           # sigval = results.macd.ewm(span=9).mean()
           sigval = results['sigval'].tolist()
           buyPoints = [None if i is np.nan else i for i in buyPoints]
-          buyPoints = [None if i is np.nan else i for i in sellPoints]
+          sellPoints = [None if i is np.nan else i for i in sellPoints]
           if any(isinstance(j, float) for j in buyPoints) and any(isinstance(i, float) for i in sellPoints):
                print("Both true")
                buyPoints = [np.nan if i is None else i for i in buyPoints]
@@ -214,8 +214,8 @@ def displayChartWithSignals(ticker, timeframe):
                apds = [
                     mpf.make_addplot(buyPoints, type="scatter", markersize=120, marker="^"),
                     mpf.make_addplot(sellPoints, type="scatter", markersize=120, marker="v"),
-                    mpf.make_addplot(macd, panel=1, color="fuchsia", secondary_y=True),
-                    mpf.make_addplot(sigval, panel=1, color="b", secondary_y=True),
+                    mpf.make_addplot(macd, panel=1, color="fuchsia", secondary_y=False),
+                    mpf.make_addplot(sigval, panel=1, color="b", secondary_y=False),
                ]
                print(f"{buyPoints} / {len(buyPoints)}")
                print(f"{sellPoints} / {len(sellPoints)}")
@@ -225,8 +225,8 @@ def displayChartWithSignals(ticker, timeframe):
                     buyPoints = [np.nan if i is None else i for i in buyPoints]
                     apds = [
                          mpf.make_addplot(buyPoints, type="scatter", markersize=120, marker="^"),
-                         mpf.make_addplot(macd, panel=1, color="fuchsia", secondary_y=True),
-                         mpf.make_addplot(sigval, panel=1, color="b", secondary_y=True),
+                         mpf.make_addplot(macd, panel=1, color="fuchsia", secondary_y=False),
+                         mpf.make_addplot(sigval, panel=1, color="b", secondary_y=False),
                     ]
                     print(f"{buyPoints} / {len(buyPoints)}")
                else:
@@ -234,8 +234,8 @@ def displayChartWithSignals(ticker, timeframe):
                     sellPoints = [np.NaN if j is None else j for j in sellPoints]
                     apds = [
                          mpf.make_addplot(sellPoints, type="scatter", markersize=120, marker="^"),
-                         mpf.make_addplot(macd, panel=1, color="fuchsia", secondary_y=True),
-                         mpf.make_addplot(sigval, panel=1, color="b", secondary_y=True),
+                         mpf.make_addplot(macd, panel=1, color="fuchsia", secondary_y=False),
+                         mpf.make_addplot(sigval, panel=1, color="b", secondary_y=False),
                     ]
                     print(f"{sellPoints} / {len(sellPoints)}")
           mpf.plot(results,type='candle',addplot=apds,figscale=1.1,figratio=(8,5),title='\n'+ticker+' '+ timeframe, style='blueskies',panel_ratios=(6,3))
@@ -819,63 +819,63 @@ dropTf1.place(x=90, y=32)
 
 ########################################################
 
-drop2 = OptionMenu(root, clicked2, *stockNameList)
-drop2.config(width=25, bg="green", foreground="white")
-drop2.place(x=0, y=80)
+# drop2 = OptionMenu(root, clicked2, *stockNameList)
+# drop2.config(width=25, bg="green", foreground="white")
+# drop2.place(x=0, y=80)
 
-button2 = Button(root, text="Get chart")
-button2.columnconfigure(0, weight=0)
-button2.place(x=0, y=115)
-button2['command'] = lambda:displayChartWithSignals(clicked2.get(), timeFrame2.get()) 
+# button2 = Button(root, text="Get chart")
+# button2.columnconfigure(0, weight=0)
+# button2.place(x=0, y=115)
+# button2['command'] = lambda:displayChartWithSignals(clicked2.get(), timeFrame2.get()) 
 
-dropTf2 = OptionMenu(root, timeFrame2, *timeFrames)
-dropTf2.config(width=10, bg="blue", foreground="white")
-dropTf2.place(x=90, y=112)
-
-########################################################
-
-drop3 = OptionMenu(root, clicked3, *stockNameList)
-drop3.config(width=25, bg="green", foreground="white")
-drop3.place(x=0, y=160)
-
-button3 = Button(root, text="Get chart")
-button3.columnconfigure(0, weight=0)
-button3.place(x=0, y=195)
-button3['command'] = lambda:displayChartWithSignals(clicked3.get(), timeFrame3.get()) 
-
-dropTf3 = OptionMenu(root, timeFrame3, *timeFrames)
-dropTf3.config(width=10, bg="blue", foreground="white")
-dropTf3.place(x=90, y=192)
+# dropTf2 = OptionMenu(root, timeFrame2, *timeFrames)
+# dropTf2.config(width=10, bg="blue", foreground="white")
+# dropTf2.place(x=90, y=112)
 
 ########################################################
 
-drop4 = OptionMenu(root, clicked4, *stockNameList)
-drop4.config(width=25, bg="green", foreground="white")
-drop4.place(x=0, y=240)
+# drop3 = OptionMenu(root, clicked3, *stockNameList)
+# drop3.config(width=25, bg="green", foreground="white")
+# drop3.place(x=0, y=160)
 
-button4 = Button(root, text="Get chart")
-button4.columnconfigure(0, weight=0)
-button4.place(x=0, y=275)
-button4['command'] = lambda:displayChartWithSignals(clicked4.get(), timeFrame4.get())
+# button3 = Button(root, text="Get chart")
+# button3.columnconfigure(0, weight=0)
+# button3.place(x=0, y=195)
+# button3['command'] = lambda:displayChartWithSignals(clicked3.get(), timeFrame3.get()) 
 
-dropTf4 = OptionMenu(root, timeFrame4, *timeFrames)
-dropTf4.config(width=10, bg="blue", foreground="white")
-dropTf4.place(x=90, y=272)
+# dropTf3 = OptionMenu(root, timeFrame3, *timeFrames)
+# dropTf3.config(width=10, bg="blue", foreground="white")
+# dropTf3.place(x=90, y=192)
+
+########################################################
+
+# drop4 = OptionMenu(root, clicked4, *stockNameList)
+# drop4.config(width=25, bg="green", foreground="white")
+# drop4.place(x=0, y=240)
+
+# button4 = Button(root, text="Get chart")
+# button4.columnconfigure(0, weight=0)
+# button4.place(x=0, y=275)
+# button4['command'] = lambda:displayChartWithSignals(clicked4.get(), timeFrame4.get())
+
+# dropTf4 = OptionMenu(root, timeFrame4, *timeFrames)
+# dropTf4.config(width=10, bg="blue", foreground="white")
+# dropTf4.place(x=90, y=272)
 
 # ########################################################
 
-drop5 = OptionMenu(root, clicked5, *stockNameList)
-drop5.config(width=25, bg="green", foreground="white")
-drop5.place(x=0, y=320)
+# drop5 = OptionMenu(root, clicked5, *stockNameList)
+# drop5.config(width=25, bg="green", foreground="white")
+# drop5.place(x=0, y=320)
 
-button5 = Button(root, text="Get chart")
-button5.columnconfigure(0, weight=0)
-button5.place(x=0, y=355)
-button5['command'] = lambda:displayChartWithSignals(clicked5.get(), timeFrame5.get()) 
+# button5 = Button(root, text="Get chart")
+# button5.columnconfigure(0, weight=0)
+# button5.place(x=0, y=355)
+# button5['command'] = lambda:displayChartWithSignals(clicked5.get(), timeFrame5.get()) 
 
-dropTf5 = OptionMenu(root, timeFrame5, *timeFrames)
-dropTf5.config(width=10, bg="blue", foreground="white")
-dropTf5.place(x=90, y=352)
+# dropTf5 = OptionMenu(root, timeFrame5, *timeFrames)
+# dropTf5.config(width=10, bg="blue", foreground="white")
+# dropTf5.place(x=90, y=352)
 
 ########################################################
 
@@ -908,20 +908,20 @@ displayBox.tag_configure('SELL', background='black', foreground='red')
 displayBox.configure(state="disabled")
 
 
-fiveMinSyncTime = syncTiming5()
-thirtyMinSyncTime = syncTiming30()
+# fiveMinSyncTime = syncTiming5()
+# thirtyMinSyncTime = syncTiming30()
 hourSyncTime = syncTiming60()
 
-print(f'Five mins in: {fiveMinSyncTime} seconds')
-print(f'Thirty mins in: {thirtyMinSyncTime} seconds ')
+# print(f'Five mins in: {fiveMinSyncTime} seconds')
+# print(f'Thirty mins in: {thirtyMinSyncTime} seconds ')
 print(f'One hour in: {hourSyncTime} seconds')
 
-_5minThread = RepeatedTimer(fiveMinSyncTime, getData, "5MIN")
-_30minThread = RepeatedTimer(thirtyMinSyncTime, getData, "30MIN")
+# _5minThread = RepeatedTimer(fiveMinSyncTime, getData, "5MIN")
+# _30minThread = RepeatedTimer(thirtyMinSyncTime, getData, "30MIN")
 _1hThread = RepeatedTimer(hourSyncTime, getData, "1HOUR")
 
-_5minThread.interval = 301
-_30minThread.interval = 1801
+# _5minThread.interval = 301
+# _30minThread.interval = 1801
 _1hThread.interval = 3601
 
 # Begin Tkinter GUI event loop
@@ -929,6 +929,6 @@ root.mainloop()
 
 # Stop timer threads after GUI exection ends
 # Otherwise threads will cause program to continue to run
-_5minThread.stop()
-_30minThread.stop()
+# _5minThread.stop()
+# _30minThread.stop()
 _1hThread.stop()
