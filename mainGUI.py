@@ -243,31 +243,6 @@ def displayChartWithSignals(ticker, timeframe):
           messagebox.showerror("ERROR", """There is currently no data for this stock timeframe pairing.\nPlease wait until the next interval before trying again.""")
           print(e)
 
-          # if any(isinstance(j,float) for j in buyPoints) or any(isinstance(i,float) for i in sellPoints):
-          #      apds = [
-          #           mpf.make_addplot(buyPoints, type='scatter', markersize=120, marker='^'),
-          #           mpf.make_addplot(sellPoints, type='scatter', markersize=120, marker='v'),
-          #           mpf.make_addplot(macd,panel=1,color='fuchsia',secondary_y=True),
-          #           mpf.make_addplot(sigval,panel=1,color='b',secondary_y=True)
-          #      ]
-
-          #      mpf.plot(results,type='candle',addplot=apds,figscale=1.1,figratio=(8,5),title='\n'+ticker+' '+ timeframe,
-          #      style='blueskies',panel_ratios=(6,3))
-          #      print("Integer found!")  
-          # else:
-          #      apds = [
-          #           mpf.make_addplot(ema12,color='lime'),
-          #           mpf.make_addplot(ema26,color='c'),
-          #           mpf.make_addplot(macd,panel=1,color='fuchsia',secondary_y=True),
-          #           mpf.make_addplot(sigval,panel=1,color='b',secondary_y=True)
-          #      ]
-          #      print("No signals to print, printing normal chart")
-          #      mpf.plot(results,type='candle',addplot=apds,figscale=1.1,figratio=(8,5),title='\n'+ticker+' '+ timeframe,
-          #      style='blueskies',panel_ratios=(6,3))
-     # except Exception as e:
-     #      messagebox.showerror("ERROR", """There is currently no data for this stock timeframe pairing.\nPlease wait until the next interval before trying again.""")
-     #      print(e)
-
 # df['col1'] = df['col1'].apply(complex_function)
 # Function to convert given datetime from US/New York timezone
 # into local timezone (GMT/BST)
@@ -563,66 +538,6 @@ def getData(tf):
           except Exception as e:
                print(f'There has been an error: {e}')
                print(traceback.format_exc())
-
-# def getData(tf):
-#      if tf == "5min" :
-#           print("5MIN interval reached")
-#           symbolsToGet = []
-#           for key in srtCombo:
-#                if srtCombo[key][5] == "5MIN":
-#                     symbolsToGet.append(indDict[srtCombo[key][4]])
-#           print(symbolsToGet)
-#           for assetName in symbolsToGet:
-#                createTable(assetName, tf)
-#           for asset in symbolsToGet:
-#                try:
-#                     calculateAndInsert(asset, tf)
-#                     returnedDf = retrieveDataOneTf(symbolsToGet, tf)
-#                     displayResults(returnedDf)
-#                     # print(tabulate(returnedDf, showindex=False, headers=returnedDf.columns))
-#                     # print(tabulate(df2, showindex=False, headers=list(df2.columns)))
-#                except Exception as e:
-#                     print(f'There has been an error: {e}')
-#                     print(traceback.format_exc())
-#      if tf == "30MIN":
-#           print("30MIN interval reached")
-#           symbolsToGet = []
-#           for key in srtCombo:
-#                if srtCombo[key][5] == "30MIN":
-#                     symbolsToGet.append(indDict[srtCombo[key][4]])
-#           print(symbolsToGet)
-#           for assetName in symbolsToGet:
-#                createTable(assetName, "30min")
-#           for asset in symbolsToGet:
-#                try:
-#                     calculateAndInsert(asset, "30min")
-#                     returnedDf = retrieveDataOneTf(symbolsToGet, "30min")
-#                     displayResults(returnedDf)
-#                     # print(tabulate(returnedDf, showindex=False, headers=returnedDf.columns))
-#                     # print(tabulate(df2, showindex=False, headers=list(df2.columns)))
-#                except Exception as e:
-#                     print(f'There has been an error: {e}')
-#                     print(traceback.format_exc())
-#      if tf == "1HOUR":
-#           print("1HOUR interval reached")
-#           symbolsToGet = []
-#           for key in srtCombo:
-#                if srtCombo[key][5] == "1HOUR":
-#                     symbolsToGet.append(indDict[srtCombo[key][4]])
-#           print(symbolsToGet)
-#           for assetName in symbolsToGet:
-#                createTable(assetName, "1h")
-#           for asset in symbolsToGet:
-#                try:
-#                     calculateAndInsert(asset, "1h")
-#                     returnedDf = retrieveDataOneTf(symbolsToGet, "1h")
-#                     displayResults(returnedDf)
-#                     # print(tabulate(returnedDf, showindex=False, headers=returnedDf.columns))
-#                     # print(tabulate(df2, showindex=False, headers=list(df2.columns)))
-#                except Exception as e:
-#                     print(f'There has been an error: {e}')
-#                     print(traceback.format_exc())
-
           
 # Define callback function
 # Args
