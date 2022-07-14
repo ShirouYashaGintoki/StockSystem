@@ -734,63 +734,63 @@ dropTf1.place(x=90, y=32)
 
 ########################################################
 
-# drop2 = OptionMenu(root, clicked2, *stockNameList)
-# drop2.config(width=25, bg="green", foreground="white")
-# drop2.place(x=0, y=80)
+drop2 = OptionMenu(root, clicked2, *stockNameList)
+drop2.config(width=25, bg="green", foreground="white")
+drop2.place(x=0, y=80)
 
-# button2 = Button(root, text="Get chart")
-# button2.columnconfigure(0, weight=0)
-# button2.place(x=0, y=115)
-# button2['command'] = lambda:displayChartWithSignals(clicked2.get(), timeFrame2.get()) 
+button2 = Button(root, text="Get chart")
+button2.columnconfigure(0, weight=0)
+button2.place(x=0, y=115)
+button2['command'] = lambda:displayChartWithSignals(clicked2.get(), timeFrame2.get()) 
 
-# dropTf2 = OptionMenu(root, timeFrame2, *timeFrames)
-# dropTf2.config(width=10, bg="blue", foreground="white")
-# dropTf2.place(x=90, y=112)
+dropTf2 = OptionMenu(root, timeFrame2, *timeFrames)
+dropTf2.config(width=10, bg="blue", foreground="white")
+dropTf2.place(x=90, y=112)
+
+#######################################################
+
+drop3 = OptionMenu(root, clicked3, *stockNameList)
+drop3.config(width=25, bg="green", foreground="white")
+drop3.place(x=0, y=160)
+
+button3 = Button(root, text="Get chart")
+button3.columnconfigure(0, weight=0)
+button3.place(x=0, y=195)
+button3['command'] = lambda:displayChartWithSignals(clicked3.get(), timeFrame3.get()) 
+
+dropTf3 = OptionMenu(root, timeFrame3, *timeFrames)
+dropTf3.config(width=10, bg="blue", foreground="white")
+dropTf3.place(x=90, y=192)
+
+#######################################################
+
+drop4 = OptionMenu(root, clicked4, *stockNameList)
+drop4.config(width=25, bg="green", foreground="white")
+drop4.place(x=0, y=240)
+
+button4 = Button(root, text="Get chart")
+button4.columnconfigure(0, weight=0)
+button4.place(x=0, y=275)
+button4['command'] = lambda:displayChartWithSignals(clicked4.get(), timeFrame4.get())
+
+dropTf4 = OptionMenu(root, timeFrame4, *timeFrames)
+dropTf4.config(width=10, bg="blue", foreground="white")
+dropTf4.place(x=90, y=272)
 
 ########################################################
 
-# drop3 = OptionMenu(root, clicked3, *stockNameList)
-# drop3.config(width=25, bg="green", foreground="white")
-# drop3.place(x=0, y=160)
+drop5 = OptionMenu(root, clicked5, *stockNameList)
+drop5.config(width=25, bg="green", foreground="white")
+drop5.place(x=0, y=320)
 
-# button3 = Button(root, text="Get chart")
-# button3.columnconfigure(0, weight=0)
-# button3.place(x=0, y=195)
-# button3['command'] = lambda:displayChartWithSignals(clicked3.get(), timeFrame3.get()) 
+button5 = Button(root, text="Get chart")
+button5.columnconfigure(0, weight=0)
+button5.place(x=0, y=355)
+button5['command'] = lambda:displayChartWithSignals(clicked5.get(), timeFrame5.get()) 
 
-# dropTf3 = OptionMenu(root, timeFrame3, *timeFrames)
-# dropTf3.config(width=10, bg="blue", foreground="white")
-# dropTf3.place(x=90, y=192)
-
-########################################################
-
-# drop4 = OptionMenu(root, clicked4, *stockNameList)
-# drop4.config(width=25, bg="green", foreground="white")
-# drop4.place(x=0, y=240)
-
-# button4 = Button(root, text="Get chart")
-# button4.columnconfigure(0, weight=0)
-# button4.place(x=0, y=275)
-# button4['command'] = lambda:displayChartWithSignals(clicked4.get(), timeFrame4.get())
-
-# dropTf4 = OptionMenu(root, timeFrame4, *timeFrames)
-# dropTf4.config(width=10, bg="blue", foreground="white")
-# dropTf4.place(x=90, y=272)
-
-# ########################################################
-
-# drop5 = OptionMenu(root, clicked5, *stockNameList)
-# drop5.config(width=25, bg="green", foreground="white")
-# drop5.place(x=0, y=320)
-
-# button5 = Button(root, text="Get chart")
-# button5.columnconfigure(0, weight=0)
-# button5.place(x=0, y=355)
-# button5['command'] = lambda:displayChartWithSignals(clicked5.get(), timeFrame5.get()) 
-
-# dropTf5 = OptionMenu(root, timeFrame5, *timeFrames)
-# dropTf5.config(width=10, bg="blue", foreground="white")
-# dropTf5.place(x=90, y=352)
+dropTf5 = OptionMenu(root, timeFrame5, *timeFrames)
+dropTf5.config(width=10, bg="blue", foreground="white")
+dropTf5.place(x=90, y=352)
 
 ########################################################
 
@@ -812,31 +812,23 @@ displayBox = st.ScrolledText(root, width=29, height=23, font=("Calibri", 15))
 displayBox.place(x=300, y=2)
 displayBox.tag_configure('BUY', background='black', foreground='lime')
 displayBox.tag_configure('SELL', background='black', foreground='red')
-# displayBox.insert(END, "This is blue\n", 'color')
-# displayBox.tag_configure("BUY", background="black", foreground="lime")
-# displayBox.insert("end", "BUY\nsome signal data\n", "BUY")
-
-# displayBox.pack()
-# displayBox.insert('end', "Hello\n", 'BUY')
-# displayBox.insert(tkinter.INSERT, "BEAN SIGNAL\n")
-# displayBox.delete("1.0","end")
 displayBox.configure(state="disabled")
 
 
-# fiveMinSyncTime = syncTiming5()
-# thirtyMinSyncTime = syncTiming30()
+fiveMinSyncTime = syncTiming5()
+thirtyMinSyncTime = syncTiming30()
 hourSyncTime = syncTiming60()
 
-# print(f'Five mins in: {fiveMinSyncTime} seconds')
-# print(f'Thirty mins in: {thirtyMinSyncTime} seconds ')
+print(f'Five mins in: {fiveMinSyncTime} seconds')
+print(f'Thirty mins in: {thirtyMinSyncTime} seconds ')
 print(f'One hour in: {hourSyncTime} seconds')
 
-# _5minThread = RepeatedTimer(fiveMinSyncTime, getData, "5MIN")
-# _30minThread = RepeatedTimer(thirtyMinSyncTime, getData, "30MIN")
+_5minThread = RepeatedTimer(fiveMinSyncTime, getData, "5MIN")
+_30minThread = RepeatedTimer(thirtyMinSyncTime, getData, "30MIN")
 _1hThread = RepeatedTimer(hourSyncTime, getData, "1HOUR")
 
-# _5minThread.interval = 301
-# _30minThread.interval = 1801
+_5minThread.interval = 301
+_30minThread.interval = 1801
 _1hThread.interval = 3601
 
 # Begin Tkinter GUI event loop
@@ -844,6 +836,6 @@ root.mainloop()
 
 # Stop timer threads after GUI exection ends
 # Otherwise threads will cause program to continue to run
-# _5minThread.stop()
-# _30minThread.stop()
+_5minThread.stop()
+_30minThread.stop()
 _1hThread.stop()
