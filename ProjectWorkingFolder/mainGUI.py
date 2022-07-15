@@ -16,7 +16,7 @@ import pymysql
 import traceback
 import mplfinance as mpf
 from configparser import ConfigParser
-from setupConfigFile import ftConfigSetup
+from config import ftConfigSetup
 
 
 # URL for API

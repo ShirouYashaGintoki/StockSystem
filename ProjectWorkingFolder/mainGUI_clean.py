@@ -16,7 +16,6 @@ import pymysql
 import traceback
 import mplfinance as mpf
 from configparser import ConfigParser
-from setupConfigFile import ftConfigSetup
 
 
 # URL for API
@@ -447,6 +446,7 @@ root.geometry("650x600")
 root.resizable(False, False)
 
 # Initialize variables for dropdown boxes
+global clicked1, clicked2, clicked3, clicked4, cliced5, timeFrame1, timeFrame2, timeFrame3, timeFrame4, timeFrame5
 clicked1   = StringVar(root)
 clicked2   = StringVar(root)
 clicked3   = StringVar(root)
@@ -603,54 +603,6 @@ def callback2(clicker, timeframe, clickerName):
           print(f'drop variable has been changed to {timeframe.get()}')
           print([clicker.get(), timeframe.get()])
 
-     
-def saveConfig():
-     config_object = ConfigParser()
-     config_object.read("config.ini")
-
-     configData = config_object["STOCKCONFIG"]
-
-     configData["stock1"] = clicked1.get()
-     configData["time1"] = timeFrame1.get()
-
-     configData["stock2"] = clicked2.get()
-     configData["time2"] = timeFrame2.get()
-
-     configData["stock3"] = clicked3.get()
-     configData["time3"] = timeFrame3.get()
-
-     configData["stock4"] = clicked4.get()
-     configData["time4"] = timeFrame4.get()
-
-     configData["stock5"] = clicked5.get()
-     configData["time5"] = timeFrame5.get()
-
-     with open('config.ini', 'w') as conf:
-          config_object.write(conf)
-     conf.close()
-     print("Config written to!")
-
-def loadConfig():
-     config_object = ConfigParser()
-     config_object.read("config.ini")
-
-     configData = config_object["STOCKCONFIG"]
-     clicked1.set(configData["stock1"])
-     timeFrame1.set(configData["time1"])
-
-     clicked2.set(configData["stock2"])
-     timeFrame2.set(configData["time2"])
-
-     clicked3.set(configData["stock3"])
-     timeFrame3.set(configData["time3"])
-
-     clicked4.set(configData["stock4"])
-     timeFrame4.set(configData["time4"])
-
-     clicked5.set(configData["stock5"])
-     timeFrame5.set(configData["time5"])
-     print("Config loaded!")
-
 # Stock 1
 #####################################
 clicked1.set(stockNameList[0])
@@ -711,7 +663,6 @@ srtCombo["clicked5"][5] = timeFrame5.get()
 clicked5.trace_add("write", lambda var_name, var_index, operation : callback1(clicked5, timeFrame5, "clicked5"))
 timeFrame5.trace_add("write", lambda var_name, var_index, operation: callback2(clicked5, timeFrame5, "clicked5"))
 #####################################
-stockNameList
 drop1 = OptionMenu(root, clicked1, *stockNameList)
 drop1.config(width=25, bg="green", foreground="white")
 drop1.place(x=0, y=0)
@@ -787,10 +738,12 @@ dropTf5.place(x=90, y=352)
 
 ########################################################
 
+from config import saveConfig
 saveConfig = Button(root, text="Save Selections", command=saveConfig)
 saveConfig.config(width=15, bg="white", foreground="black")
 saveConfig.place(x=440, y=570)
 
+from config import loadConfig
 loadConfig = Button(root, text="Load Selections", command=loadConfig)
 loadConfig.config(width=15, bg="white", foreground="black")
 loadConfig.place(x=320, y=570)
