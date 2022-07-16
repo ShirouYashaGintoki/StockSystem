@@ -67,6 +67,16 @@ apiFormat = "%Y-%m-%d %H:%M:%S"
 ukFormat = "%d-%m-%Y %H:%M:%S"
 local_zone = tz.tzlocal()
 
+try:
+     with open("config.ini") as cfg:
+          print("Config found!")
+          cfg.close()
+except Exception as e:
+     print(e)
+     print("Config not found")
+     ftConfigSetup()
+     print("Config created!")
+
 # beansontoastA1? for PC
 # Establish connection using mysql connector
 config_object = ConfigParser()
@@ -509,6 +519,9 @@ timeFrame3 = StringVar(root)
 timeFrame4 = StringVar(root)
 timeFrame5 = StringVar(root)
 
+global clickerVar
+clickerVar = False
+
 def getData(tf):
      apiArgTf = timeFrameDict[tf]
      print(tf, apiArgTf)
@@ -533,16 +546,14 @@ def getData(tf):
 # Define callback function
 # Args
 # clicker = The StringVar associated with the stock dropdown box
-# timeframe = The StringVar associated with the timeframe 
-# down box
+# timeframe = The StringVar associated with the timeframe drop down box
 # clickername = The name identifying the dropdown box being changed
-def callback1(clicker, timeframe, clickerName):
+def callback1(clicker, timeframe, clickerName, *args):
+     for arg in args:
+          if arg == True:
+               return
      # When dropdown is changed, check if its combo exists
-     # print(f'New clicker/timeframe combo: {clicker.get()}, {timeframe.get()}')
      for keyName in srtCombo:
-          # print(f'Checking this clicker: {srtCombo[keyName]}')
-          # print(f'Recieved clicker name: {clickerName}, Current key name: {keyName}')
-          # print(f'{clicker.get()}, {timeframe.get()} vs {srtCombo[keyName][4]}, {srtCombo[keyName][5]}')
           if [clicker.get(), timeframe.get()] == [srtCombo[keyName][4], srtCombo[keyName][5]]:
                if clickerName == keyName:
                     continue
@@ -568,14 +579,12 @@ def callback1(clicker, timeframe, clickerName):
           print(f'New combo registered as {srtCombo[clickerName][4]}, {srtCombo[clickerName][5]}')
 
 
-def callback2(clicker, timeframe, clickerName):
+def callback2(clicker, timeframe, clickerName, *args):
      # When dropdown is changed, check if its combo exists
-     # print(f'New clicker/timeframe combo: {clicker.get()}, {timeframe.get()}')
-     # clickerName = argname(clicker)
+     for arg in args:
+          if arg == True:
+               return
      for keyName in srtCombo:
-          # print(f'Checking this clicker: {srtCombo[keyName]}')
-          # print(f'Recieved clicker name: {clickerName}, Current key name: {keyName}')
-          # print(f'{clicker.get()}, {timeframe.get()} vs {srtCombo[keyName][4]}, {srtCombo[keyName][5]}')
           if [clicker.get(), timeframe.get()] == [srtCombo[keyName][4], srtCombo[keyName][5]]:
                if clickerName == keyName:
                     continue
@@ -629,6 +638,8 @@ def saveConfig():
      print("Config written to!")
 
 def loadConfig():
+     global clickerVar
+     clickerVar = True
      config_object = ConfigParser()
      config_object.read("config.ini")
 
@@ -648,6 +659,9 @@ def loadConfig():
      clicked5.set(configData["stock5"])
      timeFrame5.set(configData["time5"])
      print("Config loaded!")
+     clickerVar = False
+
+
 
 # Stock 1
 #####################################
@@ -657,8 +671,8 @@ srtCombo["clicked1"][0] = clicked1.get()
 srtCombo["clicked1"][2] = timeFrame1.get()
 srtCombo["clicked1"][4] = clicked1.get()
 srtCombo["clicked1"][5] = timeFrame1.get()
-clicked1.trace_add("write", lambda var_name, var_index, operation: callback1(clicked1, timeFrame1, "clicked1"))
-timeFrame1.trace_add("write", lambda var_name, var_index, operation: callback2(clicked1, timeFrame1, "clicked1"))
+clicked1.trace_add("write", lambda var_name, var_index, operation: callback1(clicked1, timeFrame1, "clicked1", clickerVar))
+timeFrame1.trace_add("write", lambda var_name, var_index, operation: callback2(clicked1, timeFrame1, "clicked1", clickerVar))
 
 #####################################
 
@@ -670,8 +684,8 @@ srtCombo["clicked2"][0] = clicked2.get()
 srtCombo["clicked2"][2] = timeFrame2.get()
 srtCombo["clicked2"][4] = clicked2.get()
 srtCombo["clicked2"][5] = timeFrame2.get()
-clicked2.trace_add("write", lambda var_name, var_index, operation: callback1(clicked2, timeFrame2, "clicked2"))
-timeFrame2.trace_add("write", lambda var_name, var_index, operation: callback2(clicked2, timeFrame2, "clicked2"))
+clicked2.trace_add("write", lambda var_name, var_index, operation: callback1(clicked2, timeFrame2, "clicked2", clickerVar))
+timeFrame2.trace_add("write", lambda var_name, var_index, operation: callback2(clicked2, timeFrame2, "clicked2", clickerVar))
 #####################################
 
 # Stock 3
@@ -682,8 +696,8 @@ srtCombo["clicked3"][0] = clicked3.get()
 srtCombo["clicked3"][2] = timeFrame3.get()
 srtCombo["clicked3"][4] = clicked3.get()
 srtCombo["clicked3"][5] = timeFrame3.get()
-clicked3.trace_add("write", lambda var_name, var_index, operation: callback1(clicked3, timeFrame3, "clicked3"))
-timeFrame3.trace_add("write", lambda var_name, var_index, operation: callback2(clicked3, timeFrame3, "clicked3"))
+clicked3.trace_add("write", lambda var_name, var_index, operation: callback1(clicked3, timeFrame3, "clicked3", clickerVar))
+timeFrame3.trace_add("write", lambda var_name, var_index, operation: callback2(clicked3, timeFrame3, "clicked3", clickerVar))
 #####################################
 
 # Stock 4
@@ -694,8 +708,8 @@ srtCombo["clicked4"][0] = clicked4.get()
 srtCombo["clicked4"][2] = timeFrame4.get()
 srtCombo["clicked4"][4] = clicked4.get()
 srtCombo["clicked4"][5] = timeFrame4.get()
-clicked4.trace_add("write", lambda var_name, var_index, operation: callback1(clicked4, timeFrame4, "clicked4"))
-timeFrame4.trace_add("write", lambda var_name, var_index, operation: callback2(clicked4, timeFrame4, "clicked4"))
+clicked4.trace_add("write", lambda var_name, var_index, operation: callback1(clicked4, timeFrame4, "clicked4", clickerVar))
+timeFrame4.trace_add("write", lambda var_name, var_index, operation: callback2(clicked4, timeFrame4, "clicked4", clickerVar))
 #####################################
 
 # Stock 5
@@ -706,8 +720,8 @@ srtCombo["clicked5"][0] = clicked5.get()
 srtCombo["clicked5"][2] = timeFrame5.get()
 srtCombo["clicked5"][4] = clicked5.get()
 srtCombo["clicked5"][5] = timeFrame5.get()
-clicked5.trace_add("write", lambda var_name, var_index, operation : callback1(clicked5, timeFrame5, "clicked5"))
-timeFrame5.trace_add("write", lambda var_name, var_index, operation: callback2(clicked5, timeFrame5, "clicked5"))
+clicked5.trace_add("write", lambda var_name, var_index, operation : callback1(clicked5, timeFrame5, "clicked5", clickerVar))
+timeFrame5.trace_add("write", lambda var_name, var_index, operation: callback2(clicked5, timeFrame5, "clicked5", clickerVar))
 #####################################
 stockNameList
 drop1 = OptionMenu(root, clicked1, *stockNameList)
@@ -784,6 +798,7 @@ dropTf5.config(width=10, bg="blue", foreground="white")
 dropTf5.place(x=90, y=352)
 
 ########################################################
+loadConfig()
 
 saveConfig = Button(root, text="Save Selections", command=saveConfig)
 saveConfig.config(width=15, bg="white", foreground="black")
