@@ -20,19 +20,19 @@ def ftConfigSetup():
     }
 
     config_object["STOCKCONFIG"] = {
-        "stock1": "ABT",
+        "stock1": "ABBOTT LABORATORIES",
         "time1": "5min",
 
-        "stock2": "ABBV",
+        "stock2": "ABBVIE",
         "time2": "5min",
 
-        "stock3": "ACN",
+        "stock3": "ACCENTURE PLC.",
         "time3": "5min",
 
-        "stock4": "ADBE",
+        "stock4": "ADOBE",
         "time4": "5min",
 
-        "stock5": "AMD",
+        "stock5": "ADVANCED MICRO DEVICES",
         "time5": "5min"
     }
 

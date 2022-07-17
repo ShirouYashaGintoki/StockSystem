@@ -33,19 +33,11 @@ dbInfo = config_object["DATABASE"]
 apiInfo = config_object["API"]
 stockTfInfo = config_object["STOCKCONFIG"]
 
-# URL for API
-url = apiInfo["url"]
-
-# Headers for API
-headers = {
-    apiInfo["apiheader"],
-    apiInfo["apikey"]
-}
-
 # Indices as dataframe, Sheet 1 is main sheet, Sheet 2 has 5 for testing
 indices = pd.read_excel('tickers2.xlsx', sheet_name='Sheet 1')
 # Create a dictionary of stock names and their ticker symbols
 indDict = pd.Series(indices.Symbol.values, index=indices.CompanyName).to_dict()
+print(indDict)
 # Create a list of stock names for display purposes
 stockNameList = sorted(list(indDict.keys()))
 # print(f'{stockNameList}')
@@ -144,9 +136,9 @@ def displayChart(dfOfSignals):
           print("Current signals after converting date format")
           results['datetime'] = results['datetime'].apply(convertTimezone)
           print(tabulate(results, showindex=True, headers=list(results.columns)))
-          # Line 286 gives error signalDt = row[1] + time_delta
           results = results.sort_values(by=['datetime'])
           if not results.empty:
+               print("Results sorted by datetime")
                print(tabulate(results, showindex=False, headers=results.columns))
                for row in results.itertuples():
                     if row[13] == "BUY":
@@ -255,22 +247,20 @@ def getData(tf):
 # timeframe = The StringVar associated with the timeframe drop down box
 # clickername = The name identifying the dropdown box being changed
 def callback1(clicker, timeframe, clickerName, *args):
-     for arg in args:
-          if arg == True:
-               return
      # When dropdown is changed, check if its combo exists
-     for keyName in srtCombo:
-          if [clicker.get(), timeframe.get()] == [srtCombo[keyName][4], srtCombo[keyName][5]]:
-               if clickerName == keyName:
-                    continue
-               else:
-                    print(f'A duplicate has been found!')
-                    messagebox.showinfo("ERROR", "You cannot have duplicate STOCK/TIMEFRAME combinations!")
-                    if srtCombo[clickerName][1] == '':
-                         clicker.set(srtCombo[clickerName][0])
+     if not args[0]:
+          for keyName in srtCombo:
+               if [clicker.get(), timeframe.get()] == [srtCombo[keyName][4], srtCombo[keyName][5]]:
+                    if clickerName == keyName:
+                         continue
                     else:
-                         clicker.set(srtCombo[clickerName][1])
-                    break
+                         print(f'A duplicate has been found!')
+                         messagebox.showinfo("ERROR", "You cannot have duplicate STOCK/TIMEFRAME combinations!")
+                         if srtCombo[clickerName][1] == '':
+                              clicker.set(srtCombo[clickerName][0])
+                         else:
+                              clicker.set(srtCombo[clickerName][1])
+                         break
      else:
           # If combo does not exist, allow change and move stock pointers
           # Check if there is already a pointer in stock rotation
@@ -287,21 +277,19 @@ def callback1(clicker, timeframe, clickerName, *args):
 
 def callback2(clicker, timeframe, clickerName, *args):
      # When dropdown is changed, check if its combo exists
-     for arg in args:
-          if arg == True:
-               return
-     for keyName in srtCombo:
-          if [clicker.get(), timeframe.get()] == [srtCombo[keyName][4], srtCombo[keyName][5]]:
-               if clickerName == keyName:
-                    continue
-               else:
-                    print(f'A duplicate time has been found!')
-                    messagebox.showinfo("ERROR", "You cannot have duplicate STOCK/TIMEFRAME combinations!")
-                    if srtCombo[clickerName][3] == '':
-                         timeframe.set(srtCombo[clickerName][2])
+     if not args[0]:
+          for keyName in srtCombo:
+               if [clicker.get(), timeframe.get()] == [srtCombo[keyName][4], srtCombo[keyName][5]]:
+                    if clickerName == keyName:
+                         continue
                     else:
-                         timeframe.set(srtCombo[clickerName][3])
-                    break
+                         print(f'A duplicate time has been found!')
+                         messagebox.showinfo("ERROR", "You cannot have duplicate STOCK/TIMEFRAME combinations!")
+                         if srtCombo[clickerName][3] == '':
+                              timeframe.set(srtCombo[clickerName][2])
+                         else:
+                              timeframe.set(srtCombo[clickerName][3])
+                         break
      else:
           # If combo does not exist, allow change and move stock pointers
           # Check if there is already a pointer in stock rotation
@@ -366,7 +354,6 @@ def loadConfig():
      timeFrame5.set(configData["time5"])
      print("Config loaded!")
      clickerVar = False
-
 
 
 # Stock 1
@@ -504,6 +491,7 @@ dropTf5.config(width=10, bg="blue", foreground="white")
 dropTf5.place(x=90, y=352)
 
 ########################################################
+
 loadConfig()
 
 saveConfig = Button(root, text="Save Selections", command=saveConfig)
@@ -532,7 +520,7 @@ thirtyMinSyncTime = syncTiming30()
 hourSyncTime = syncTiming60()
 
 print(f'Five mins in: {fiveMinSyncTime} seconds')
-print(f'Thirty mins in: {thirtyMinSyncTime} seconds ')
+print(f'Thirty mins in: {thirtyMinSyncTime} seconds')
 print(f'One hour in: {hourSyncTime} seconds')
 
 _5minThread = RepeatedTimer(fiveMinSyncTime, getData, "5MIN")
@@ -543,6 +531,7 @@ _5minThread.interval = 301
 _30minThread.interval = 1801
 _1hThread.interval = 3601
 
+root.iconbitmap('ticker.ico')
 # Begin Tkinter GUI event loop
 root.mainloop()
 

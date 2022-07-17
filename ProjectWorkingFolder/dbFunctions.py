@@ -4,7 +4,7 @@ import pandas as pd
 import sqlalchemy
 from pandas import json_normalize
 import traceback
-import tabulate
+from tabulate import tabulate
 import requests
 from configparser import ConfigParser
 
@@ -72,6 +72,20 @@ def retrieveDataOneTf(listOfAssets, timeframe):
           listOfFrames.append(df)
      return pd.concat(listOfFrames)
 
+headers = {
+     'x-rapidapi-host' : apiInfo["apiheader"],
+     'x-rapidapi-key': apiInfo["apikey"]
+}
+
+# # URL for API
+# url = "https://twelve-data1.p.rapidapi.com/time_series"
+
+# # Headers for API
+# headers = {
+#     'x-rapidapi-host': "twelve-data1.p.rapidapi.com",
+#     'x-rapidapi-key': "d9d76c3270msh16a19417bd4b485p1b0395jsn955227be6f56"
+# }
+
 # Function to calculate values and insert data into the table
 # Args
 # asset  -> Given name of the target asset, as a string
@@ -85,7 +99,7 @@ def calculateAndInsert(asset, period):
           # Create query string to retrieve given asset, at timeframe, at set periods of 30 in JSON format
           querystring = {"symbol":asset,"interval":period,"outputsize":"30","format":"json"}
           # Using Python Requests GET method, make HTTP request to get the response from the API
-          response = requests.request("GET", apiInfo["url"], headers=dbInfo["apiheader"], params=querystring)
+          response = requests.request("GET", apiInfo["url"], headers=headers, params=querystring)
           # Convert response to json
           jsonResponse = response.json()
           # Use built in Pandas function to normalize the json response into a dataframe
