@@ -4,18 +4,13 @@ from tkinter import scrolledtext as st
 import pandas as pd
 import threading
 import time
-import numpy as np
 from datetime import datetime as dtInner
 from dateutil import tz
 from tabulate import tabulate
 import mysql.connector
 import traceback
-import mplfinance as mpf
 from configparser import ConfigParser
 from configSetup import ftConfigSetup
-from timing import syncTiming5, syncTiming30, syncTiming60
-import displayResults
-from dbFunctions import retrieveDataOneTf, createTable, calculateAndInsert
 
 try:
      with open("config.ini") as cfg:
@@ -26,6 +21,11 @@ except Exception as e:
      print("Config not found")
      ftConfigSetup()
      print("Config created!")
+
+from timing import syncTiming5, syncTiming30, syncTiming60
+from displayChart import displayChartWithSignals
+from dbFunctions import retrieveDataOneTf, createTable, calculateAndInsert
+
 
 config_object = ConfigParser()
 config_object.read("config.ini")
@@ -115,7 +115,7 @@ def convertTimezone(timeInColumn):
      return local_time_str
 
 # Display new signals to board
-def displayResults(dfOfSignals):
+def displayChart(dfOfSignals):
      try:
           # Query dataframe argument to select only signal records
           results = dfOfSignals.query('selector == "BUY" or selector == "SELL"')
@@ -181,101 +181,6 @@ def displayResults(dfOfSignals):
 # Dataframe to hold the records of the current signals to prevent duplicate signals
 currentSignals = pd.DataFrame(columns=["datetime", "assetname", "open", "high", "low", "close", "volume", "ema12", "ema26", "macd", "sigval", "selector"])
 
-def makeFloat(given):
-     fixed = float(given)
-     return fixed
-
-def makeInt(given):
-     fixed = int(given)
-     return fixed
- 
-
-# Function to display chart with signal indicators
-# ticker -> Given ticker
-# timeframe -> Given timeframe
-def displayChartWithSignals(ticker, timeframe):
-     try:
-          accessTf = timeFrameDict[timeframe]
-          # Retrieve last 30 (or 60) results from the database
-          results = retrieveDataOneTf([indDict[ticker]], accessTf)
-          results.index = pd.DatetimeIndex(results['datetime'])
-          results.drop(['datetime'], axis=1, inplace=True)
-          results['open'] = results['open'].apply(makeFloat)
-          results['high'] = results['high'].apply(makeFloat)
-          results['low'] = results['low'].apply(makeFloat)
-          results['close'] = results['close'].apply(makeFloat)
-          results['volume'] = results['volume'].apply(makeInt)
-          results['volume'].apply(lambda x: '%.12f' % x)
-          print("Results for chart")
-          results = results.iloc[::-1]
-          print(results)
-
-          buyPoints = []
-          sellPoints = []
-
-          counter = 0
-          for i in range(0, len(results)):
-               if counter == 0:
-                    counter += 1
-                    buyPoints.append(np.nan)
-                    sellPoints.append(np.nan)
-                    continue
-               else:
-                    if results.selector.iloc[i] == "BUY":
-                         buyPoints.append(results.close.iloc[i] * 0.995)
-                    else:
-                         buyPoints.append(np.nan)
-                    
-                    if results.selector.iloc[i] == "SELL":
-                         sellPoints.append(results.close.iloc[i] * 1.005)
-                    else:
-                         sellPoints.append(np.nan)
-
-          # print(buyPoints)
-          # print(sellPoints)
-          # macd = results.ema12 - results.ema26
-          macd = results['macd'].tolist()
-          # sigval = results.macd.ewm(span=9).mean()
-          sigval = results['sigval'].tolist()
-          buyPoints = [None if i is np.nan else i for i in buyPoints]
-          sellPoints = [None if i is np.nan else i for i in sellPoints]
-          if any(isinstance(j, float) for j in buyPoints) and any(isinstance(i, float) for i in sellPoints):
-               print("Both true")
-               buyPoints = [np.nan if i is None else i for i in buyPoints]
-               sellPoints = [np.nan if j is None else j for j in sellPoints]
-               apds = [
-                    mpf.make_addplot(buyPoints, type="scatter", markersize=120, marker="^"),
-                    mpf.make_addplot(sellPoints, type="scatter", markersize=120, marker="v"),
-                    mpf.make_addplot(macd, panel=1, color="fuchsia", secondary_y=False),
-                    mpf.make_addplot(sigval, panel=1, color="b", secondary_y=False),
-               ]
-               print(f"{buyPoints} / {len(buyPoints)}")
-               print(f"{sellPoints} / {len(sellPoints)}")
-          else:
-               if any(isinstance(j, float) for j in buyPoints) and not any(isinstance(i, float) for i in sellPoints):
-                    print("List 1 true, list 2 false")
-                    buyPoints = [np.nan if i is None else i for i in buyPoints]
-                    apds = [
-                         mpf.make_addplot(buyPoints, type="scatter", markersize=120, marker="^"),
-                         mpf.make_addplot(macd, panel=1, color="fuchsia", secondary_y=False),
-                         mpf.make_addplot(sigval, panel=1, color="b", secondary_y=False),
-                    ]
-                    print(f"{buyPoints} / {len(buyPoints)}")
-               else:
-                    print("List 2 true, list 1 false")
-                    sellPoints = [np.NaN if j is None else j for j in sellPoints]
-                    apds = [
-                         mpf.make_addplot(sellPoints, type="scatter", markersize=120, marker="^"),
-                         mpf.make_addplot(macd, panel=1, color="fuchsia", secondary_y=False),
-                         mpf.make_addplot(sigval, panel=1, color="b", secondary_y=False),
-                    ]
-                    print(f"{sellPoints} / {len(sellPoints)}")
-          mpf.plot(results,type='candle',addplot=apds,figscale=1.1,figratio=(8,5),title='\n'+ticker+' '+ timeframe, style='blueskies',panel_ratios=(6,3))
-     except Exception as e:
-          messagebox.showerror("ERROR", """There is currently no data for this stock timeframe pairing.\nPlease wait until the next interval before trying again.""")
-          print(e)
-          
-
 class RepeatedTimer(object):
      def __init__(self, interval, function, *args, **kwargs):
           self._timer = None
@@ -339,7 +244,7 @@ def getData(tf):
           try:
                calculateAndInsert(asset, apiArgTf)
                returnedDf = retrieveDataOneTf(symbolsToGet, apiArgTf)
-               displayResults(returnedDf)
+               displayChart(returnedDf)
           except Exception as e:
                print(f'There has been an error: {e}')
                print(traceback.format_exc())
