@@ -6,6 +6,18 @@ from pandas import json_normalize
 import traceback
 import tabulate
 import requests
+from configparser import ConfigParser
+
+config_object = ConfigParser()
+config_object.read("config.ini")
+dbInfo = config_object["DATABASE"]
+apiInfo = config_object["API"]
+
+# Indices as dataframe, Sheet 1 is main sheet, Sheet 2 has 5 for testing
+indices = pd.read_excel('tickers2.xlsx', sheet_name='Sheet 1')
+# Create a dictionary of stock names and their ticker symbols
+indDict = pd.Series(indices.Symbol.values, index=indices.CompanyName).to_dict()
+
 # Function to create a table in the database
 # for a given asset and timeframe combination
 # Args
@@ -15,10 +27,10 @@ def createTable(assetName, timeFrame):
      # Try to establish connection to db schema
      try:
           db = mysql.connector.connect(
-               host="localhost",
-               user="root",
-               passwd="beansontoastA1?",
-               database="StockTables"
+               host=dbInfo['host'],
+               user=dbInfo['user'],
+               passwd=dbInfo['password'],
+               database=dbInfo['dbname']
           )
           # Create cursor
           my_cursor = db.cursor()
@@ -49,7 +61,7 @@ def createTable(assetName, timeFrame):
 
 def retrieveDataOneTf(listOfAssets, timeframe):
      pymysql.install_as_MySQLdb()
-     engine = sqlalchemy.create_engine('mysql://root:beansontoastA1?@localhost:3306/stocktables')
+     engine = sqlalchemy.create_engine(dbInfo["dblink"])
      listOfFrames = []
      for asset in listOfAssets:
           query = f'''
@@ -69,11 +81,11 @@ def calculateAndInsert(asset, period):
           # Install pymysql library as the MYSQL database
           pymysql.install_as_MySQLdb()
           # Create the engine using sqlalchemy
-          engine = sqlalchemy.create_engine('mysql://root:beansontoastA1?@localhost:3306/stocktables')
+          engine = sqlalchemy.create_engine(dbInfo["dblink"])
           # Create query string to retrieve given asset, at timeframe, at set periods of 30 in JSON format
           querystring = {"symbol":asset,"interval":period,"outputsize":"30","format":"json"}
           # Using Python Requests GET method, make HTTP request to get the response from the API
-          response = requests.request("GET", url, headers=headers, params=querystring)
+          response = requests.request("GET", apiInfo["url"], headers=dbInfo["apiheader"], params=querystring)
           # Convert response to json
           jsonResponse = response.json()
           # Use built in Pandas function to normalize the json response into a dataframe

@@ -2,29 +2,44 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter import scrolledtext as st
 import pandas as pd
-from pandas import json_normalize
 import threading
 import time
 import numpy as np
 from datetime import datetime as dtInner
 from dateutil import tz
-import requests
 from tabulate import tabulate
 import mysql.connector
 import traceback
 import mplfinance as mpf
 from configparser import ConfigParser
 from configSetup import ftConfigSetup
-from timing import _5minThread, _30minThread, _1hThread
+from timing import syncTiming5, syncTiming30, syncTiming60
+import displayResults
+from dbFunctions import retrieveDataOneTf, createTable, calculateAndInsert
 
+try:
+     with open("config.ini") as cfg:
+          print("Config found!")
+          cfg.close()
+except Exception as e:
+     print(e)
+     print("Config not found")
+     ftConfigSetup()
+     print("Config created!")
+
+config_object = ConfigParser()
+config_object.read("config.ini")
+dbInfo = config_object["DATABASE"]
+apiInfo = config_object["API"]
+stockTfInfo = config_object["STOCKCONFIG"]
 
 # URL for API
-url = "https://twelve-data1.p.rapidapi.com/time_series"
+url = apiInfo["url"]
 
 # Headers for API
 headers = {
-    'x-rapidapi-host': "twelve-data1.p.rapidapi.com",
-    'x-rapidapi-key': "d9d76c3270msh16a19417bd4b485p1b0395jsn955227be6f56"
+    apiInfo["apiheader"],
+    apiInfo["apikey"]
 }
 
 # Indices as dataframe, Sheet 1 is main sheet, Sheet 2 has 5 for testing
@@ -60,33 +75,13 @@ srtCombo = {
      "clicked5" : ['', '', '', '', '', '']
 }
 
-# Set time zones as data received is in US timezone
-from_zone = tz.gettz('America/New_York')
-apiFormat = "%Y-%m-%d %H:%M:%S"
-ukFormat = "%d-%m-%Y %H:%M:%S"
-local_zone = tz.tzlocal()
-
-try:
-     with open("config.ini") as cfg:
-          print("Config found!")
-          cfg.close()
-except Exception as e:
-     print(e)
-     print("Config not found")
-     ftConfigSetup()
-     print("Config created!")
-
 # beansontoastA1? for PC
 # Establish connection using mysql connector
-config_object = ConfigParser()
-config_object.read("config.ini")
-dbInfo = config_object['DATABASE']
 db = mysql.connector.connect(
     host=dbInfo['host'],
     user=dbInfo['user'],
     passwd=dbInfo['password']
 )
-
 
 # Create cursor
 my_cursor = db.cursor()
@@ -99,6 +94,89 @@ except Exception:
 
 # Close database connection now
 db.close()
+
+# Set time zones as data received is in US timezone
+from_zone = tz.gettz('America/New_York')
+apiFormat = "%Y-%m-%d %H:%M:%S"
+ukFormat = "%d-%m-%Y %H:%M:%S"
+local_zone = tz.tzlocal()
+
+# df['col1'] = df['col1'].apply(complex_function)
+# Function to convert given datetime from US/New York timezone
+# into local timezone (GMT/BST)
+# Args
+# datetime -> A value from the column that is given
+def convertTimezone(timeInColumn):
+     dt_utc = str(timeInColumn)
+     dt_utc = dtInner.strptime(dt_utc, apiFormat)
+     dt_utc = dt_utc.replace(tzinfo=from_zone)
+     dt_local = dt_utc.astimezone(local_zone)
+     local_time_str = dt_local.strftime(ukFormat)
+     return local_time_str
+
+# Display new signals to board
+def displayResults(dfOfSignals):
+     try:
+          # Query dataframe argument to select only signal records
+          results = dfOfSignals.query('selector == "BUY" or selector == "SELL"')
+          # Drop the rowid to compare with currentSignals
+          # results = results.drop(['rowid'], axis=1, errors='ignore')
+          results.sort_values(by=['datetime'])
+          # Print results for checking
+          print("Initial results")
+          print(tabulate(results, showindex=False, headers=results.columns))
+          # results = results.drop_duplicates(keep='first')
+          # Make currentSignals global to allow it to be accessed as local in the function
+          global currentSignals
+          # Print 
+          print("Current Signals dataframe")
+          print(tabulate(currentSignals, showindex=False, headers=results.columns))
+          results = results[~results.apply(tuple,1).isin(currentSignals.apply(tuple,1))]
+          # if results[9] != "BUY" or results[9] != "SELL":
+          #      results.shift(1, axis=1)
+          print("Results after filter attempt")
+          print(tabulate(results, showindex=False, headers=results.columns))
+          currentSignals = pd.concat([results, currentSignals], ignore_index=True)
+          print("Current signals after adding results")
+          print(tabulate(currentSignals, showindex=False, headers=results.columns))
+          # Trying to convert date format into local as string because MySQL only accepts
+          # YYYY-MM-DD format, not the UK format
+          print("Current signals after converting date format")
+          results['datetime'] = results['datetime'].apply(convertTimezone)
+          print(tabulate(results, showindex=True, headers=list(results.columns)))
+          # Line 286 gives error signalDt = row[1] + time_delta
+          results = results.sort_values(by=['datetime'])
+          if not results.empty:
+               print(tabulate(results, showindex=False, headers=results.columns))
+               for row in results.itertuples():
+                    if row[13] == "BUY":
+                         displayBox.configure(state="normal")
+                         assetName = row[3]
+                         signalDt = row[2]
+                         closePrice = row[7]
+                         assetInputString = f'BUY: {assetName}\n'
+                         displayBox.insert('end', assetInputString, 'BUY')
+                         inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {closePrice:.2f}\n---------------------------------------------\n"""
+                         displayBox.insert('end', inputString)
+                         print(inputString)
+                    elif row[13] == "SELL":
+                         displayBox.configure(state="normal")
+                         assetName = row[3]
+                         signalDt = row[2]
+                         closePrice = row[7]
+                         assetInputString = f'SELL: {assetName}\n'
+                         displayBox.insert('end', assetInputString, 'SELL')
+                         inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {closePrice:.2f}\n---------------------------------------------\n"""
+                         displayBox.insert('end', inputString)
+                         print(inputString)
+               displayBox.configure(state="disabled")
+          else:
+               print("Nothing available")
+               displayBox.configure(state="normal")
+               displayBox.insert('end', "Nothing to add")
+               displayBox.configure(state="disabled")
+     except Exception as e:
+          print("DisplayBox error " + str(e))
 
 # Dataframe to hold the records of the current signals to prevent duplicate signals
 currentSignals = pd.DataFrame(columns=["datetime", "assetname", "open", "high", "low", "close", "volume", "ema12", "ema26", "macd", "sigval", "selector"])
@@ -196,84 +274,6 @@ def displayChartWithSignals(ticker, timeframe):
      except Exception as e:
           messagebox.showerror("ERROR", """There is currently no data for this stock timeframe pairing.\nPlease wait until the next interval before trying again.""")
           print(e)
-
-# df['col1'] = df['col1'].apply(complex_function)
-# Function to convert given datetime from US/New York timezone
-# into local timezone (GMT/BST)
-# Args
-# datetime -> A value from the column that is given
-def convertTimezone(timeInColumn):
-     dt_utc = str(timeInColumn)
-     dt_utc = dtInner.strptime(dt_utc, apiFormat)
-     dt_utc = dt_utc.replace(tzinfo=from_zone)
-     dt_local = dt_utc.astimezone(local_zone)
-     local_time_str = dt_local.strftime(ukFormat)
-     return local_time_str
-     
-
-# Display new signals to board
-def displayResults(dfOfSignals):
-     try:
-          # Query dataframe argument to select only signal records
-          results = dfOfSignals.query('selector == "BUY" or selector == "SELL"')
-          # Drop the rowid to compare with currentSignals
-          # results = results.drop(['rowid'], axis=1, errors='ignore')
-          results.sort_values(by=['datetime'])
-          # Print results for checking
-          print("Initial results")
-          print(tabulate(results, showindex=False, headers=results.columns))
-          # results = results.drop_duplicates(keep='first')
-          # Make currentSignals global to allow it to be accessed as local in the function
-          global currentSignals
-          # Print 
-          print("Current Signals dataframe")
-          print(tabulate(currentSignals, showindex=False, headers=results.columns))
-          results = results[~results.apply(tuple,1).isin(currentSignals.apply(tuple,1))]
-          # if results[9] != "BUY" or results[9] != "SELL":
-          #      results.shift(1, axis=1)
-          print("Results after filter attempt")
-          print(tabulate(results, showindex=False, headers=results.columns))
-          currentSignals = pd.concat([results, currentSignals], ignore_index=True)
-          print("Current signals after adding results")
-          print(tabulate(currentSignals, showindex=False, headers=results.columns))
-          # Trying to convert date format into local as string because MySQL only accepts
-          # YYYY-MM-DD format, not the UK format
-          print("Current signals after converting date format")
-          results['datetime'] = results['datetime'].apply(convertTimezone)
-          print(tabulate(results, showindex=True, headers=list(results.columns)))
-          # Line 286 gives error signalDt = row[1] + time_delta
-          results = results.sort_values(by=['datetime'])
-          if not results.empty:
-               print(tabulate(results, showindex=False, headers=results.columns))
-               for row in results.itertuples():
-                    if row[13] == "BUY":
-                         displayBox.configure(state="normal")
-                         assetName = row[3]
-                         signalDt = row[2]
-                         closePrice = row[7]
-                         assetInputString = f'BUY: {assetName}\n'
-                         displayBox.insert('end', assetInputString, 'BUY')
-                         inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {closePrice:.2f}\n---------------------------------------------\n"""
-                         displayBox.insert('end', inputString)
-                         print(inputString)
-                    elif row[13] == "SELL":
-                         displayBox.configure(state="normal")
-                         assetName = row[3]
-                         signalDt = row[2]
-                         closePrice = row[7]
-                         assetInputString = f'SELL: {assetName}\n'
-                         displayBox.insert('end', assetInputString, 'SELL')
-                         inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {closePrice:.2f}\n---------------------------------------------\n"""
-                         displayBox.insert('end', inputString)
-                         print(inputString)
-               displayBox.configure(state="disabled")
-          else:
-               print("Nothing available")
-               displayBox.configure(state="normal")
-               displayBox.insert('end', "Nothing to add")
-               displayBox.configure(state="disabled")
-     except Exception as e:
-          print("DisplayBox error " + str(e))
           
 
 class RepeatedTimer(object):
