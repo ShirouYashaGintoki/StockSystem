@@ -23,7 +23,7 @@ except Exception as e:
      print("Config created!")
 
 from timing import syncTiming5, syncTiming30, syncTiming60
-from displayChart import displayChartWithSignals
+from displaySignalsOnChart import displayChartWithSignals
 from dbFunctions import retrieveDataOneTf, createTable, calculateAndInsert
 
 
@@ -35,9 +35,9 @@ stockTfInfo = config_object["STOCKCONFIG"]
 
 # Indices as dataframe, Sheet 1 is main sheet, Sheet 2 has 5 for testing
 indices = pd.read_excel('tickers2.xlsx', sheet_name='Sheet 1')
+print(indices)
 # Create a dictionary of stock names and their ticker symbols
 indDict = pd.Series(indices.Symbol.values, index=indices.CompanyName).to_dict()
-print(indDict)
 # Create a list of stock names for display purposes
 stockNameList = sorted(list(indDict.keys()))
 # print(f'{stockNameList}')

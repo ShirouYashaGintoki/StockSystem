@@ -77,15 +77,6 @@ headers = {
      'x-rapidapi-key': apiInfo["apikey"]
 }
 
-# # URL for API
-# url = "https://twelve-data1.p.rapidapi.com/time_series"
-
-# # Headers for API
-# headers = {
-#     'x-rapidapi-host': "twelve-data1.p.rapidapi.com",
-#     'x-rapidapi-key': "d9d76c3270msh16a19417bd4b485p1b0395jsn955227be6f56"
-# }
-
 # Function to calculate values and insert data into the table
 # Args
 # asset  -> Given name of the target asset, as a string
