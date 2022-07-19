@@ -11,8 +11,20 @@ headers = {
 	"X-RapidAPI-Host": "alpha-vantage.p.rapidapi.com"
 }
 
+df = pd.DataFrame(columns=["datetime", "open", "high", "low", "close", "volume"])
+
 response = requests.request("GET", url, headers=headers, params=querystring)
 jsonResponse = response.json()
-df2 = pd.json_normalize(jsonResponse, record_path="Time Series (5min)"g)
+items = jsonResponse["Time Series (5min)"]
+count = 0
+for row in items:
+	if count != 30:
+		someDf = pd.DataFrame([items[row]])
+		someDf["datetime"] = row
+		someDf.rename(columns={"1. open": "open", "2. high": "high", "3. low": "low", "4. close": "close", "5. volume": "volume"}, inplace=True)
+		df = pd.concat([df, someDf], ignore_index=True)
+
+print(df.head(5))
+# print(items)
 # df2 = pd.json_normalize(jsonResponse["Time Series (5min)"])
 # print(df2.head(5))

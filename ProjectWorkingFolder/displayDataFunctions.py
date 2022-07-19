@@ -6,8 +6,10 @@ from tkinter import messagebox
 import mplfinance as mpf
 from configparser import ConfigParser
 from tabulate import tabulate
+import datetime as dtOuter
 from datetime import datetime as dtInner
 from dateutil import tz
+import yfinance as yf
 
 config_object = ConfigParser()
 config_object.read("config.ini")
@@ -30,6 +32,8 @@ def findNameFromTicker(name):
 indices = pd.read_excel('tickers2.xlsx', sheet_name='Sheet 1')
 # Create a dictionary of stock names and their ticker symbols
 indDict = pd.Series(indices.Symbol.values, index=indices.CompanyName).to_dict()
+# Create a list of stock names for display purposes
+tickerSymbolList = sorted(list(indDict.values()))
 
 # Set time zones as data received is in US timezone
 from_zone = tz.gettz('America/New_York')
@@ -228,3 +232,51 @@ def displayChart(dfOfSignals, displayBox):
                displayBox.configure(state="disabled")
      except Exception as e:
           print("DisplayBox error " + str(e))
+
+def getRecentDayPctDiff(top5Box, bot5Box):
+     tod = dtInner.now()
+     d = dtOuter.timedelta(days = 7)
+     a = tod - d
+     start = a.strftime("%Y-%m-%d")
+     end = tod.strftime("%Y-%m-%d")
+     listOfFrames = []
+     print(f'Today: {tod} -> Yesterday: {a}')
+     for tickerSymbol in tickerSymbolList:
+          df = pd.DataFrame(columns=["Symbol", "Percentage Change (%)"])
+          if tickerSymbol == "BRK.A": tickerSymbol = "BRK-A"
+          tick = yf.Ticker(tickerSymbol)
+          tickerHistory = tick.history(period='5d', interval='1d', start=start, end=end, auto_adjust=False, rounding=True)
+          tickerHistory = tickerHistory.iloc[::-1]
+          tickerHistory.drop(['Dividends', 'Adj Close', 'Stock Splits'], axis=1, inplace=True, errors="ignore")
+          tickerHistory = tickerHistory.head(2)
+
+          day1Close = tickerHistory.Close.iloc[0]
+          day2Close = tickerHistory.Close.iloc[1]
+
+          # print(day1Close, day2Close)
+          percent_diff = (((float(day1Close) - float(day2Close))/float(day2Close)) * 100)
+          df.loc[-1] = [tickerSymbol, percent_diff]
+          df["Percentage Change (%)"].apply(lambda x: '%.2f' % x)
+          listOfFrames.append(df)
+     result = pd.concat(listOfFrames)
+     result = result.sort_values(by=["Percentage Change (%)"], ascending=False)
+     top5 = result.head(5)
+     bot5 = result.tail(5)
+     bot5 = bot5.iloc[::-1]
+     prefix = ""
+     top5Box.configure(state="normal")
+     bot5Box.configure(state="normal")
+     top5Box.delete('1.0', "end")
+     bot5Box.delete('1.0', "end")
+     for row in top5.itertuples():
+          prefix = "+" if row[2] > 0 else ""
+          insertText = f'Asset: {findNameFromTicker(row[1])} | Pct Change: {prefix}{row[2]:.2f}%\n'
+          top5Box.insert("end", insertText)
+          print(f'Asset: {findNameFromTicker(row[1])} | Pct Change: {prefix}{row[2]:.2f}%')
+     for row in bot5.itertuples():
+          prefix = "+" if row[2] > 0 else ""
+          insertText = f'Asset: {findNameFromTicker(row[1])} | Pct Change: {prefix}{row[2]:.2f}%\n'
+          bot5Box.insert("end", insertText)
+          print(f'Asset: {findNameFromTicker(row[1])} | Pct Change: {prefix}{row[2]:.2f}%')
+     top5Box.configure(state="disabled")
+     bot5Box.configure(state="disabled")

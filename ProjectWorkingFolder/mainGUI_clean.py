@@ -4,9 +4,6 @@ from tkinter import scrolledtext as st
 import pandas as pd
 import threading
 import time
-from datetime import datetime as dtInner
-from dateutil import tz
-from tabulate import tabulate
 import mysql.connector
 import traceback
 from configparser import ConfigParser
@@ -23,7 +20,7 @@ except Exception as e:
      ftConfigSetup()
      print("Config created!")
 
-from displayDataFunctions import displayChartWithSignals, displayChart
+from displayDataFunctions import displayChartWithSignals, displayChart, getRecentDayPctDiff
 from dbFunctions import retrieveDataOneTf, createTable, calculateAndInsert
 
 
@@ -581,6 +578,7 @@ _1hThread.interval = 3601
 
 root.iconbitmap('ticker.ico')
 # Begin Tkinter GUI event loop
+getRecentDayPctDiff(top5Box, bot5Box)
 root.mainloop()
 
 # Stop timer threads after GUI exection ends
