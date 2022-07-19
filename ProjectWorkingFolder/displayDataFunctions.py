@@ -145,7 +145,7 @@ def displayChartWithSignals(ticker, timeframe):
                          mpf.make_addplot(sigval, panel=1, color="b", secondary_y=False),
                     ]
                     print(f"{buyPoints} / {len(buyPoints)}")
-               else:
+               elif any(isinstance(j, float) for j in sellPoints) and not any(isinstance(i, float) for i in buyPoints):
                     print("List 2 true, list 1 false")
                     sellPoints = [np.NaN if j is None else j for j in sellPoints]
                     apds = [
@@ -154,6 +154,12 @@ def displayChartWithSignals(ticker, timeframe):
                          mpf.make_addplot(sigval, panel=1, color="b", secondary_y=False),
                     ]
                     print(f"{sellPoints} / {len(sellPoints)}")
+               else:
+                    print("No signals, displaying normal chart")
+                    apds = [
+                         mpf.make_addplot(macd, panel=1, color="fuchsia", secondary_y=False),
+                         mpf.make_addplot(sigval, panel=1, color="b", secondary_y=False),
+                    ]
           mpf.plot(results,type='candle',addplot=apds,figscale=1.1,figratio=(8,5),title='\n'+ticker+' '+ timeframe, style='blueskies',panel_ratios=(6,3))
      except Exception as e:
           messagebox.showerror("ERROR", """There is currently no data for this stock timeframe pairing.\nPlease wait until the next interval before trying again.""")

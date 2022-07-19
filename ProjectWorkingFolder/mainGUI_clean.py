@@ -273,6 +273,18 @@ def callback1(clicker, timeframe, clickerName, *args):
                     srtCombo[clickerName][4] = clicker.get()
                print(f'drop variable has been changed to {clicker.get()}')
                print(f'New combo registered as {srtCombo[clickerName][4]}, {srtCombo[clickerName][5]}')
+     else:
+               # If combo does not exist, allow change and move stock pointers
+               # Check if there is already a pointer in stock rotation
+               if srtCombo[clickerName][1] == '':
+                    srtCombo[clickerName][1] = clicker.get()
+                    srtCombo[clickerName][4] = clicker.get()
+               else:
+                    srtCombo[clickerName][0] = srtCombo[clickerName][1]
+                    srtCombo[clickerName][1] = clicker.get()
+                    srtCombo[clickerName][4] = clicker.get()
+               print(f'drop variable has been changed to {clicker.get()}')
+               print(f'New combo registered as {srtCombo[clickerName][4]}, {srtCombo[clickerName][5]}')
 
 
 def callback2(clicker, timeframe, clickerName, *args):
@@ -291,6 +303,19 @@ def callback2(clicker, timeframe, clickerName, *args):
                               timeframe.set(srtCombo[clickerName][3])
                          break
           else:
+               # If combo does not exist, allow change and move stock pointers
+               # Check if there is already a pointer in stock rotation
+               if srtCombo[clickerName][3] == '':
+                    srtCombo[clickerName][3] = timeframe.get()
+                    srtCombo[clickerName][5] = timeframe.get()
+               else:
+                    srtCombo[clickerName][2] = srtCombo[clickerName][3]
+                    srtCombo[clickerName][3] = timeframe.get()
+                    srtCombo[clickerName][5] = timeframe.get()
+                    
+               print(f'drop variable has been changed to {timeframe.get()}')
+               print([clicker.get(), timeframe.get()])
+     else:
                # If combo does not exist, allow change and move stock pointers
                # Check if there is already a pointer in stock rotation
                if srtCombo[clickerName][3] == '':
