@@ -21,13 +21,6 @@ timeFrameDict = {
      "1HOUR" : "1h"
 }
 
-def findNameFromTicker(name):
-    findKey = ""
-    for key, value in indDict.items():
-        if name == value:
-            findKey = key
-    return findKey
-
 # Indices as dataframe, Sheet 1 is main sheet, Sheet 2 has 5 for testing
 indices = pd.read_excel('tickers2.xlsx', sheet_name='Sheet 1')
 # Create a dictionary of stock names and their ticker symbols
@@ -43,6 +36,13 @@ local_zone = tz.tzlocal()
 
 # Dataframe to hold the records of the current signals to prevent duplicate signals
 currentSignals = pd.DataFrame(columns=["datetime", "assetname", "open", "high", "low", "close", "volume", "ema12", "ema26", "macd", "sigval", "selector"])
+
+def findNameFromTicker(name):
+    findKey = ""
+    for key, value in indDict.items():
+        if name == value:
+            findKey = key
+    return findKey
 
 # df['col1'] = df['col1'].apply(complex_function)
 # Function to convert given datetime from US/New York timezone
@@ -240,7 +240,7 @@ def getRecentDayPctDiff(top5Box, bot5Box):
      start = a.strftime("%Y-%m-%d")
      end = tod.strftime("%Y-%m-%d")
      listOfFrames = []
-     print(f'Today: {tod} -> Yesterday: {a}')
+     # print(f'Today: {tod} -> Yesterday: {a}')
      for tickerSymbol in tickerSymbolList:
           df = pd.DataFrame(columns=["Symbol", "Percentage Change (%)"])
           if tickerSymbol == "BRK.A": tickerSymbol = "BRK-A"

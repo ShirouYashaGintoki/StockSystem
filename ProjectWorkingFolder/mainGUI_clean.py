@@ -22,6 +22,7 @@ except Exception as e:
 
 from displayDataFunctions import displayChartWithSignals, displayChart, getRecentDayPctDiff
 from dbFunctions import retrieveDataOneTf, createTable, calculateAndInsert
+# from dbFuncAlphaTest import retrieveDataOneTf, createTable, calculateAndInsert
 
 
 config_object = ConfigParser()
@@ -83,92 +84,6 @@ except Exception:
 
 # Close database connection now
 db.close()
-
-# # Set time zones as data received is in US timezone
-# from_zone = tz.gettz('America/New_York')
-# apiFormat = "%Y-%m-%d %H:%M:%S"
-# ukFormat = "%d-%m-%Y %H:%M:%S"
-# local_zone = tz.tzlocal()
-
-# # df['col1'] = df['col1'].apply(complex_function)
-# # Function to convert given datetime from US/New York timezone
-# # into local timezone (GMT/BST)
-# # Args
-# # datetime -> A value from the column that is given
-# def convertTimezone(timeInColumn):
-#      dt_utc = str(timeInColumn)
-#      dt_utc = dtInner.strptime(dt_utc, apiFormat)
-#      dt_utc = dt_utc.replace(tzinfo=from_zone)
-#      dt_local = dt_utc.astimezone(local_zone)
-#      local_time_str = dt_local.strftime(ukFormat)
-#      return local_time_str
-
-# # Display new signals to board
-# def displayChart(dfOfSignals):
-#      try:
-#           # Query dataframe argument to select only signal records
-#           results = dfOfSignals.query('selector == "BUY" or selector == "SELL"')
-#           # Drop the rowid to compare with currentSignals
-#           # results = results.drop(['rowid'], axis=1, errors='ignore')
-#           results.sort_values(by=['datetime'])
-#           # Print results for checking
-#           print("Initial results")
-#           print(tabulate(results, showindex=False, headers=results.columns))
-#           # results = results.drop_duplicates(keep='first')
-#           # Make currentSignals global to allow it to be accessed as local in the function
-#           global currentSignals
-#           # Print 
-#           print("Current Signals dataframe")
-#           print(tabulate(currentSignals, showindex=False, headers=results.columns))
-#           results = results[~results.apply(tuple,1).isin(currentSignals.apply(tuple,1))]
-#           # if results[9] != "BUY" or results[9] != "SELL":
-#           #      results.shift(1, axis=1)
-#           print("Results after filter attempt")
-#           print(tabulate(results, showindex=False, headers=results.columns))
-#           currentSignals = pd.concat([results, currentSignals], ignore_index=True)
-#           print("Current signals after adding results")
-#           print(tabulate(currentSignals, showindex=False, headers=results.columns))
-#           # Trying to convert date format into local as string because MySQL only accepts
-#           # YYYY-MM-DD format, not the UK format
-#           print("Current signals after converting date format")
-#           results['datetime'] = results['datetime'].apply(convertTimezone)
-#           print(tabulate(results, showindex=True, headers=list(results.columns)))
-#           results = results.sort_values(by=['datetime'])
-#           if not results.empty:
-#                print("Results sorted by datetime")
-#                print(tabulate(results, showindex=False, headers=results.columns))
-#                for row in results.itertuples():
-#                     if row[13] == "BUY":
-#                          displayBox.configure(state="normal")
-#                          assetName = row[3]
-#                          signalDt = row[2]
-#                          closePrice = row[7]
-#                          assetInputString = f'BUY: {assetName}\n'
-#                          displayBox.insert('end', assetInputString, 'BUY')
-#                          inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {closePrice:.2f}\n---------------------------------------------\n"""
-#                          displayBox.insert('end', inputString)
-#                          print(inputString)
-#                     elif row[13] == "SELL":
-#                          displayBox.configure(state="normal")
-#                          assetName = row[3]
-#                          signalDt = row[2]
-#                          closePrice = row[7]
-#                          assetInputString = f'SELL: {assetName}\n'
-#                          displayBox.insert('end', assetInputString, 'SELL')
-#                          inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {closePrice:.2f}\n---------------------------------------------\n"""
-#                          displayBox.insert('end', inputString)
-#                          print(inputString)
-#                displayBox.configure(state="disabled")
-#           else:
-#                print("Nothing available")
-#                displayBox.configure(state="normal")
-#                displayBox.insert('end', "Nothing to add")
-#                displayBox.configure(state="disabled")
-#      except Exception as e:
-#           print("DisplayBox error " + str(e))
-
-# # Dataframe to hold the records of the current signals to prevent duplicate signals
-# currentSignals = pd.DataFrame(columns=["datetime", "assetname", "open", "high", "low", "close", "volume", "ema12", "ema26", "macd", "sigval", "selector"])
 
 class RepeatedTimer(object):
      def __init__(self, interval, function, *args, **kwargs):
@@ -233,6 +148,8 @@ def getData(tf):
           try:
                calculateAndInsert(asset, apiArgTf)
                returnedDf = retrieveDataOneTf(symbolsToGet, apiArgTf)
+               print("RETURNED DF CHECK SELECTOR")
+               print(returnedDf)
                displayChart(returnedDf, displayBox)
           except Exception as e:
                print(f'There has been an error: {e}')
@@ -544,7 +461,7 @@ displayBox.configure(state="disabled")
 
 ########################################################
 
-top5Label = Label(root, text="Top 5 Performers (Percent increase from yesterday)").place(x=10, y=400)
+top5Label = Label(root, text="Top 5 Performers (Percent increase from yesterday)", foreground="green").place(x=10, y=400)
 top5Box = Text(root, width=45, height=8, font=("Calibri", 10))
 top5Box.place(x=10, y=420)
 top5Box.configure(state="disabled")
@@ -553,7 +470,7 @@ top5Box.insert("end", "test")
 
 ########################################################
 
-bot5Label = Label(root, text="Worst 5 Performers (Percent decrease from yesterday)").place(x=10, y=546)
+bot5Label = Label(root, text="Worst 5 Performers (Percent decrease from yesterday)", foreground="red").place(x=10, y=546)
 bot5Box = Text(root, width=45, height=8, font=("Calibri", 10))
 bot5Box.place(x=10, y=570)
 bot5Box.configure(state="disabled")
