@@ -7,6 +7,7 @@ import traceback
 from tabulate import tabulate
 import requests
 from configparser import ConfigParser
+from displayDataFunctions import findNameFromTicker
 
 config_object = ConfigParser()
 config_object.read("config.ini")
@@ -104,12 +105,12 @@ def calculateAndInsert(asset, period):
           df2 = df2.iloc[::-1]
           # print(df2.iloc[0])
           # Loop to find key from value name
-          findKey = ""
-          for key, value in indDict.items():
-               if asset == value:
-                    findKey = key
+          # findKey = ""
+          # for key, value in indDict.items():
+          #      if asset == value:
+          #           findKey = key
           # Set values according to standard MACD settings values by using build in pandas calculations rather than manual calculations for better accuracy and reduction of code
-          df2['assetname'] = findKey
+          df2['assetname'] = findNameFromTicker(asset)
           df2['EMA12'] = df2.close.ewm(span=12).mean()
           df2['EMA26'] = df2.close.ewm(span=26).mean()
           df2['MACD'] = df2.EMA12 - df2.EMA26

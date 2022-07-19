@@ -23,7 +23,7 @@ except Exception as e:
      ftConfigSetup()
      print("Config created!")
 
-from displayChartFunctions import displayChartWithSignals, displayChart
+from displayDataFunctions import displayChartWithSignals, displayChart
 from dbFunctions import retrieveDataOneTf, createTable, calculateAndInsert
 
 
@@ -531,7 +531,7 @@ top5Box.insert("end", "test")
 
 ########################################################
 
-bot5Label = Label(root, text="Worst 5 Performcers (Percent decrease from yesterday)").place(x=10, y=546)
+bot5Label = Label(root, text="Worst 5 Performers (Percent decrease from yesterday)").place(x=10, y=546)
 bot5Box = Text(root, width=45, height=8, font=("Calibri", 10))
 bot5Box.place(x=10, y=570)
 bot5Box.configure(state="disabled")

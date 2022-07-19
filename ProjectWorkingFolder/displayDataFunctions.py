@@ -8,6 +8,7 @@ from configparser import ConfigParser
 from tabulate import tabulate
 from datetime import datetime as dtInner
 from dateutil import tz
+
 config_object = ConfigParser()
 config_object.read("config.ini")
 dbInfo = config_object["DATABASE"]
@@ -17,6 +18,13 @@ timeFrameDict = {
      "30MIN" : "30min",
      "1HOUR" : "1h"
 }
+
+def findNameFromTicker(name):
+    findKey = ""
+    for key, value in indDict.items():
+        if name == value:
+            findKey = key
+    return findKey
 
 # Indices as dataframe, Sheet 1 is main sheet, Sheet 2 has 5 for testing
 indices = pd.read_excel('tickers2.xlsx', sheet_name='Sheet 1')

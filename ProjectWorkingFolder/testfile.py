@@ -1,4 +1,3 @@
-from codecs import ignore_errors
 import yfinance as yf
 import datetime
 import pandas as pd
