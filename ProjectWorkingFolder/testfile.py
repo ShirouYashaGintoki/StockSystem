@@ -9,10 +9,15 @@ indices = pd.read_excel('tickers2.xlsx', sheet_name='Sheet 1')
 # Create a dictionary of stock names and their ticker symbols
 indDict = pd.Series(indices.Symbol.values, index=indices.CompanyName).to_dict()
 # Create a list of stock names for display purposes
-stockNameList = sorted(list(indDict.keys()))
-# print(f'{stockNameList}')
 tickerSymbolList = sorted(list(indDict.values()))
-print(tickerSymbolList)
+# print(tickerSymbolList)
+
+def findNameFromTicker(name):
+    findKey = ""
+    for key, value in indDict.items():
+        if name == value:
+            findKey = key
+    return findKey
 
 def getRecentDayPctDiff():
     tod = datetime.datetime.now()
@@ -51,9 +56,14 @@ def getRecentDayPctDiff():
 
 top5, bot5 = getRecentDayPctDiff()
 print("TOP 5")
-print(top5)
-print("BOTTOM 5")
-print(bot5)
+prefix = ""
+for row in top5.itertuples():
+    prefix = "+" if row[2] > 0 else ""
+    print(f'Asset: {findNameFromTicker(row[1])} | Pct Change: {prefix}{row[2]:.2f}%')
+print("\nBOTTOM 5")
+for row in bot5.itertuples():
+    prefix = "+" if row[2] > 0 else ""
+    print(f'Asset: {findNameFromTicker(row[1])} | Pct Change: {prefix}{row[2]:.2f}%')
 
 
 # tod = datetime.datetime.now()

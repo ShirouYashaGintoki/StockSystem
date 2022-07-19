@@ -11,6 +11,7 @@ import mysql.connector
 import traceback
 from configparser import ConfigParser
 from configSetup import ftConfigSetup
+from timing import syncTiming5, syncTiming30, syncTiming60
 
 try:
      with open("config.ini") as cfg:
@@ -22,8 +23,7 @@ except Exception as e:
      ftConfigSetup()
      print("Config created!")
 
-from timing import syncTiming5, syncTiming30, syncTiming60
-from displaySignalsOnChart import displayChartWithSignals
+from displayChartFunctions import displayChartWithSignals, displayChart
 from dbFunctions import retrieveDataOneTf, createTable, calculateAndInsert
 
 
@@ -35,7 +35,7 @@ stockTfInfo = config_object["STOCKCONFIG"]
 
 # Indices as dataframe, Sheet 1 is main sheet, Sheet 2 has 5 for testing
 indices = pd.read_excel('tickers2.xlsx', sheet_name='Sheet 1')
-print(indices)
+# print(indices)
 # Create a dictionary of stock names and their ticker symbols
 indDict = pd.Series(indices.Symbol.values, index=indices.CompanyName).to_dict()
 # Create a list of stock names for display purposes
@@ -87,91 +87,91 @@ except Exception:
 # Close database connection now
 db.close()
 
-# Set time zones as data received is in US timezone
-from_zone = tz.gettz('America/New_York')
-apiFormat = "%Y-%m-%d %H:%M:%S"
-ukFormat = "%d-%m-%Y %H:%M:%S"
-local_zone = tz.tzlocal()
+# # Set time zones as data received is in US timezone
+# from_zone = tz.gettz('America/New_York')
+# apiFormat = "%Y-%m-%d %H:%M:%S"
+# ukFormat = "%d-%m-%Y %H:%M:%S"
+# local_zone = tz.tzlocal()
 
-# df['col1'] = df['col1'].apply(complex_function)
-# Function to convert given datetime from US/New York timezone
-# into local timezone (GMT/BST)
-# Args
-# datetime -> A value from the column that is given
-def convertTimezone(timeInColumn):
-     dt_utc = str(timeInColumn)
-     dt_utc = dtInner.strptime(dt_utc, apiFormat)
-     dt_utc = dt_utc.replace(tzinfo=from_zone)
-     dt_local = dt_utc.astimezone(local_zone)
-     local_time_str = dt_local.strftime(ukFormat)
-     return local_time_str
+# # df['col1'] = df['col1'].apply(complex_function)
+# # Function to convert given datetime from US/New York timezone
+# # into local timezone (GMT/BST)
+# # Args
+# # datetime -> A value from the column that is given
+# def convertTimezone(timeInColumn):
+#      dt_utc = str(timeInColumn)
+#      dt_utc = dtInner.strptime(dt_utc, apiFormat)
+#      dt_utc = dt_utc.replace(tzinfo=from_zone)
+#      dt_local = dt_utc.astimezone(local_zone)
+#      local_time_str = dt_local.strftime(ukFormat)
+#      return local_time_str
 
-# Display new signals to board
-def displayChart(dfOfSignals):
-     try:
-          # Query dataframe argument to select only signal records
-          results = dfOfSignals.query('selector == "BUY" or selector == "SELL"')
-          # Drop the rowid to compare with currentSignals
-          # results = results.drop(['rowid'], axis=1, errors='ignore')
-          results.sort_values(by=['datetime'])
-          # Print results for checking
-          print("Initial results")
-          print(tabulate(results, showindex=False, headers=results.columns))
-          # results = results.drop_duplicates(keep='first')
-          # Make currentSignals global to allow it to be accessed as local in the function
-          global currentSignals
-          # Print 
-          print("Current Signals dataframe")
-          print(tabulate(currentSignals, showindex=False, headers=results.columns))
-          results = results[~results.apply(tuple,1).isin(currentSignals.apply(tuple,1))]
-          # if results[9] != "BUY" or results[9] != "SELL":
-          #      results.shift(1, axis=1)
-          print("Results after filter attempt")
-          print(tabulate(results, showindex=False, headers=results.columns))
-          currentSignals = pd.concat([results, currentSignals], ignore_index=True)
-          print("Current signals after adding results")
-          print(tabulate(currentSignals, showindex=False, headers=results.columns))
-          # Trying to convert date format into local as string because MySQL only accepts
-          # YYYY-MM-DD format, not the UK format
-          print("Current signals after converting date format")
-          results['datetime'] = results['datetime'].apply(convertTimezone)
-          print(tabulate(results, showindex=True, headers=list(results.columns)))
-          results = results.sort_values(by=['datetime'])
-          if not results.empty:
-               print("Results sorted by datetime")
-               print(tabulate(results, showindex=False, headers=results.columns))
-               for row in results.itertuples():
-                    if row[13] == "BUY":
-                         displayBox.configure(state="normal")
-                         assetName = row[3]
-                         signalDt = row[2]
-                         closePrice = row[7]
-                         assetInputString = f'BUY: {assetName}\n'
-                         displayBox.insert('end', assetInputString, 'BUY')
-                         inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {closePrice:.2f}\n---------------------------------------------\n"""
-                         displayBox.insert('end', inputString)
-                         print(inputString)
-                    elif row[13] == "SELL":
-                         displayBox.configure(state="normal")
-                         assetName = row[3]
-                         signalDt = row[2]
-                         closePrice = row[7]
-                         assetInputString = f'SELL: {assetName}\n'
-                         displayBox.insert('end', assetInputString, 'SELL')
-                         inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {closePrice:.2f}\n---------------------------------------------\n"""
-                         displayBox.insert('end', inputString)
-                         print(inputString)
-               displayBox.configure(state="disabled")
-          else:
-               print("Nothing available")
-               displayBox.configure(state="normal")
-               displayBox.insert('end', "Nothing to add")
-               displayBox.configure(state="disabled")
-     except Exception as e:
-          print("DisplayBox error " + str(e))
+# # Display new signals to board
+# def displayChart(dfOfSignals):
+#      try:
+#           # Query dataframe argument to select only signal records
+#           results = dfOfSignals.query('selector == "BUY" or selector == "SELL"')
+#           # Drop the rowid to compare with currentSignals
+#           # results = results.drop(['rowid'], axis=1, errors='ignore')
+#           results.sort_values(by=['datetime'])
+#           # Print results for checking
+#           print("Initial results")
+#           print(tabulate(results, showindex=False, headers=results.columns))
+#           # results = results.drop_duplicates(keep='first')
+#           # Make currentSignals global to allow it to be accessed as local in the function
+#           global currentSignals
+#           # Print 
+#           print("Current Signals dataframe")
+#           print(tabulate(currentSignals, showindex=False, headers=results.columns))
+#           results = results[~results.apply(tuple,1).isin(currentSignals.apply(tuple,1))]
+#           # if results[9] != "BUY" or results[9] != "SELL":
+#           #      results.shift(1, axis=1)
+#           print("Results after filter attempt")
+#           print(tabulate(results, showindex=False, headers=results.columns))
+#           currentSignals = pd.concat([results, currentSignals], ignore_index=True)
+#           print("Current signals after adding results")
+#           print(tabulate(currentSignals, showindex=False, headers=results.columns))
+#           # Trying to convert date format into local as string because MySQL only accepts
+#           # YYYY-MM-DD format, not the UK format
+#           print("Current signals after converting date format")
+#           results['datetime'] = results['datetime'].apply(convertTimezone)
+#           print(tabulate(results, showindex=True, headers=list(results.columns)))
+#           results = results.sort_values(by=['datetime'])
+#           if not results.empty:
+#                print("Results sorted by datetime")
+#                print(tabulate(results, showindex=False, headers=results.columns))
+#                for row in results.itertuples():
+#                     if row[13] == "BUY":
+#                          displayBox.configure(state="normal")
+#                          assetName = row[3]
+#                          signalDt = row[2]
+#                          closePrice = row[7]
+#                          assetInputString = f'BUY: {assetName}\n'
+#                          displayBox.insert('end', assetInputString, 'BUY')
+#                          inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {closePrice:.2f}\n---------------------------------------------\n"""
+#                          displayBox.insert('end', inputString)
+#                          print(inputString)
+#                     elif row[13] == "SELL":
+#                          displayBox.configure(state="normal")
+#                          assetName = row[3]
+#                          signalDt = row[2]
+#                          closePrice = row[7]
+#                          assetInputString = f'SELL: {assetName}\n'
+#                          displayBox.insert('end', assetInputString, 'SELL')
+#                          inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {closePrice:.2f}\n---------------------------------------------\n"""
+#                          displayBox.insert('end', inputString)
+#                          print(inputString)
+#                displayBox.configure(state="disabled")
+#           else:
+#                print("Nothing available")
+#                displayBox.configure(state="normal")
+#                displayBox.insert('end', "Nothing to add")
+#                displayBox.configure(state="disabled")
+#      except Exception as e:
+#           print("DisplayBox error " + str(e))
 
-# Dataframe to hold the records of the current signals to prevent duplicate signals
-currentSignals = pd.DataFrame(columns=["datetime", "assetname", "open", "high", "low", "close", "volume", "ema12", "ema26", "macd", "sigval", "selector"])
+# # Dataframe to hold the records of the current signals to prevent duplicate signals
+# currentSignals = pd.DataFrame(columns=["datetime", "assetname", "open", "high", "low", "close", "volume", "ema12", "ema26", "macd", "sigval", "selector"])
 
 class RepeatedTimer(object):
      def __init__(self, interval, function, *args, **kwargs):
@@ -204,7 +204,7 @@ class RepeatedTimer(object):
 # Establish Tkinter frame as root, set geometry, and resizable off
 root = Tk()
 root.title("Simple Stock Signal System")
-root.geometry("650x600")
+root.geometry("650x700")
 root.resizable(False, False)
 
 # Initialize variables for dropdown boxes
@@ -236,7 +236,7 @@ def getData(tf):
           try:
                calculateAndInsert(asset, apiArgTf)
                returnedDf = retrieveDataOneTf(symbolsToGet, apiArgTf)
-               displayChart(returnedDf)
+               displayChart(returnedDf, displayBox)
           except Exception as e:
                print(f'There has been an error: {e}')
                print(traceback.format_exc())
@@ -261,18 +261,18 @@ def callback1(clicker, timeframe, clickerName, *args):
                          else:
                               clicker.set(srtCombo[clickerName][1])
                          break
-     else:
-          # If combo does not exist, allow change and move stock pointers
-          # Check if there is already a pointer in stock rotation
-          if srtCombo[clickerName][1] == '':
-               srtCombo[clickerName][1] = clicker.get()
-               srtCombo[clickerName][4] = clicker.get()
           else:
-               srtCombo[clickerName][0] = srtCombo[clickerName][1]
-               srtCombo[clickerName][1] = clicker.get()
-               srtCombo[clickerName][4] = clicker.get()
-          print(f'drop variable has been changed to {clicker.get()}')
-          print(f'New combo registered as {srtCombo[clickerName][4]}, {srtCombo[clickerName][5]}')
+               # If combo does not exist, allow change and move stock pointers
+               # Check if there is already a pointer in stock rotation
+               if srtCombo[clickerName][1] == '':
+                    srtCombo[clickerName][1] = clicker.get()
+                    srtCombo[clickerName][4] = clicker.get()
+               else:
+                    srtCombo[clickerName][0] = srtCombo[clickerName][1]
+                    srtCombo[clickerName][1] = clicker.get()
+                    srtCombo[clickerName][4] = clicker.get()
+               print(f'drop variable has been changed to {clicker.get()}')
+               print(f'New combo registered as {srtCombo[clickerName][4]}, {srtCombo[clickerName][5]}')
 
 
 def callback2(clicker, timeframe, clickerName, *args):
@@ -290,19 +290,19 @@ def callback2(clicker, timeframe, clickerName, *args):
                          else:
                               timeframe.set(srtCombo[clickerName][3])
                          break
-     else:
-          # If combo does not exist, allow change and move stock pointers
-          # Check if there is already a pointer in stock rotation
-          if srtCombo[clickerName][3] == '':
-               srtCombo[clickerName][3] = timeframe.get()
-               srtCombo[clickerName][5] = timeframe.get()
           else:
-               srtCombo[clickerName][2] = srtCombo[clickerName][3]
-               srtCombo[clickerName][3] = timeframe.get()
-               srtCombo[clickerName][5] = timeframe.get()
-               
-          print(f'drop variable has been changed to {timeframe.get()}')
-          print([clicker.get(), timeframe.get()])
+               # If combo does not exist, allow change and move stock pointers
+               # Check if there is already a pointer in stock rotation
+               if srtCombo[clickerName][3] == '':
+                    srtCombo[clickerName][3] = timeframe.get()
+                    srtCombo[clickerName][5] = timeframe.get()
+               else:
+                    srtCombo[clickerName][2] = srtCombo[clickerName][3]
+                    srtCombo[clickerName][3] = timeframe.get()
+                    srtCombo[clickerName][5] = timeframe.get()
+                    
+               print(f'drop variable has been changed to {timeframe.get()}')
+               print([clicker.get(), timeframe.get()])
 
      
 def saveConfig():
@@ -355,6 +355,10 @@ def loadConfig():
      print("Config loaded!")
      clickerVar = False
 
+# def test():
+#      top5Box.configure(state="normal")
+#      top5Box.insert("end", "plop")
+#      top5Box.configure(state="disabled")
 
 # Stock 1
 #####################################
@@ -494,26 +498,45 @@ dropTf5.place(x=90, y=352)
 
 loadConfig()
 
-saveConfig = Button(root, text="Save Selections", command=saveConfig)
-saveConfig.config(width=15, bg="white", foreground="black")
-saveConfig.place(x=440, y=570)
+########################################################
 
 loadConfig = Button(root, text="Load Selections", command=loadConfig)
 loadConfig.config(width=15, bg="white", foreground="black")
-loadConfig.place(x=320, y=570)
+loadConfig.place(x=320, y=600)
+
+saveConfig = Button(root, text="Save Selections", command=saveConfig)
+saveConfig.config(width=15, bg="white", foreground="black")
+saveConfig.place(x=440, y=600)
 
 exitButton = Button(root, text="Exit", command=root.destroy)
 exitButton.config(width=10, bg="red", foreground="white")
-exitButton.place(x=560, y=570)
+exitButton.place(x=560, y=600)
 
 ########################################################
 
 displayBox = st.ScrolledText(root, width=29, height=23, font=("Calibri", 15))
-displayBox.place(x=300, y=2)
+displayBox.place(x=335, y=2)
 displayBox.tag_configure('BUY', background='black', foreground='lime')
 displayBox.tag_configure('SELL', background='black', foreground='red')
 displayBox.configure(state="disabled")
 
+########################################################
+
+top5Label = Label(root, text="Top 5 Performers (Percent increase from yesterday)").place(x=10, y=400)
+top5Box = Text(root, width=45, height=8, font=("Calibri", 10))
+top5Box.place(x=10, y=420)
+top5Box.configure(state="disabled")
+top5Box.insert("end", "test")
+
+
+########################################################
+
+bot5Label = Label(root, text="Worst 5 Performcers (Percent decrease from yesterday)").place(x=10, y=546)
+bot5Box = Text(root, width=45, height=8, font=("Calibri", 10))
+bot5Box.place(x=10, y=570)
+bot5Box.configure(state="disabled")
+
+########################################################
 
 fiveMinSyncTime = syncTiming5()
 thirtyMinSyncTime = syncTiming30()
