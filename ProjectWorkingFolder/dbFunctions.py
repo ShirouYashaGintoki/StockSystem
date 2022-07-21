@@ -3,7 +3,7 @@ import pymysql
 import pandas as pd
 import sqlalchemy
 from pandas import json_normalize
-import traceback
+from tkinter import messagebox
 from tabulate import tabulate
 import requests
 from configparser import ConfigParser
@@ -166,4 +166,5 @@ def calculateAndInsert(asset, period):
      # Catch any exceptions and print the traceback
      except Exception as e:
           print(f'Exception in calculate and insert: {e}')
-          print(traceback.format_exc())
+          messagebox.showinfo("ERROR", "There has been an issue connecting to the API, please try again later\nThis application will now close")
+          exit()

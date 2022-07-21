@@ -66,11 +66,16 @@ srtCombo = {
 
 # beansontoastA1? for PC
 # Establish connection using mysql connector
-db = mysql.connector.connect(
-    host=dbInfo['host'],
-    user=dbInfo['user'],
-    passwd=dbInfo['password']
-)
+try:
+     db = mysql.connector.connect(
+     host=dbInfo['host'],
+     user=dbInfo['user'],
+     passwd=dbInfo['password']
+     )
+except Exception as e:
+     print(e)
+     messagebox.showinfo("ERROR", "You cannot have duplicate STOCK/TIMEFRAME combinations!")
+     exit()
 
 # Create cursor
 my_cursor = db.cursor()
