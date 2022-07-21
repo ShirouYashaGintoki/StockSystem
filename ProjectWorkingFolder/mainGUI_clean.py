@@ -22,7 +22,6 @@ except Exception as e:
 
 from displayDataFunctions import displayChartWithSignals, displayChart, getRecentDayPctDiff
 from dbFunctions import retrieveDataOneTf, createTable, calculateAndInsert
-# from dbFuncAlphaTest import retrieveDataOneTf, createTable, calculateAndInsert
 
 
 config_object = ConfigParser()
@@ -495,6 +494,7 @@ _1hThread.interval = 3601
 
 root.iconbitmap('ticker.ico')
 # Begin Tkinter GUI event loop
+getRecentDayPctDiff(top5Box, bot5Box)
 root.mainloop()
 
 # Stop timer threads after GUI exection ends
