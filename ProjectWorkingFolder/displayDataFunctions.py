@@ -84,7 +84,7 @@ def retrieveDataOneTf(listOfAssets, timeframe):
 def displayChartWithSignals(ticker, timeframe):
      try:
           accessTf = timeFrameDict[timeframe]
-          # Retrieve last 30 (or 60) results from the database
+          # Retrieve last 30 results from the database
           results = retrieveDataOneTf([indDict[ticker]], accessTf)
           results.index = pd.DatetimeIndex(results['datetime'])
           results.drop(['datetime'], axis=1, inplace=True)
@@ -119,11 +119,7 @@ def displayChartWithSignals(ticker, timeframe):
                     else:
                          sellPoints.append(np.nan)
 
-          # print(buyPoints)
-          # print(sellPoints)
-          # macd = results.ema12 - results.ema26
           macd = results['macd'].tolist()
-          # sigval = results.macd.ewm(span=9).mean()
           sigval = results['sigval'].tolist()
           buyPoints = [None if i is np.nan else i for i in buyPoints]
           sellPoints = [None if i is np.nan else i for i in sellPoints]
@@ -180,7 +176,6 @@ def displayChart(dfOfSignals, displayBox):
           # Print results for checking
           print("Initial results")
           print(tabulate(results, showindex=False, headers=results.columns))
-          # results = results.drop_duplicates(keep='first')
           # Make currentSignals global to allow it to be accessed as local in the function
           global currentSignals
           # Print 
@@ -227,9 +222,9 @@ def displayChart(dfOfSignals, displayBox):
                displayBox.configure(state="disabled")
           else:
                print("Nothing available")
-               displayBox.configure(state="normal")
-               displayBox.insert('end', "Nothing to add")
-               displayBox.configure(state="disabled")
+               # displayBox.configure(state="normal")
+               # displayBox.insert('end', "Nothing to add")
+               # displayBox.configure(state="disabled")
      except Exception as e:
           print("DisplayBox error " + str(e))
 

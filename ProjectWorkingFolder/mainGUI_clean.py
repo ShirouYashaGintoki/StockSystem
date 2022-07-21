@@ -31,14 +31,13 @@ dbInfo = config_object["DATABASE"]
 apiInfo = config_object["API"]
 stockTfInfo = config_object["STOCKCONFIG"]
 
-# Indices as dataframe, Sheet 1 is main sheet, Sheet 2 has 5 for testing
+# Indices as dataframe
 indices = pd.read_excel('tickers.xlsx', sheet_name='Sheet 1')
-# print(indices)
 # Create a dictionary of stock names and their ticker symbols
 indDict = pd.Series(indices.Symbol.values, index=indices.CompanyName).to_dict()
+# print(indDict)
 # Create a list of stock names for display purposes
 stockNameList = sorted(list(indDict.keys()))
-# print(f'{stockNameList}')
 
 # List of timeframes, to be changed to 5min, 30min, 1h
 # 1h has a time signal of HH:30
@@ -46,6 +45,7 @@ stockNameList = sorted(list(indDict.keys()))
 # 5min has anything that is a multiple of 5
 timeFrames = ['5MIN', '30MIN', '1HOUR']
 
+# Dictionary to hold the equivalents of timeframes and API request arguments
 timeFrameDict = {
      "5MIN" : "5min",
      "30MIN" : "30min",
@@ -56,7 +56,7 @@ timeFrameDict = {
 # and the current stock/time combination
 # Indexes 0 for last, 1 for new stock rotation
 # Indexes 2 for last, 3 for new time rotation
-# Indexes 4, 5 to store the stock time combination
+# Indexes 4, 5 to store the current stock time combination
 srtCombo = {
      "clicked1" : ['', '', '', '', '', ''],
      "clicked2" : ['', '', '', '', '', ''],
@@ -85,6 +85,8 @@ except Exception:
 # Close database connection now
 db.close()
 
+# Function found on stackoverflow by eraoul
+# https://stackoverflow.com/questions/474528/what-is-the-best-way-to-repeatedly-execute-a-function-every-x-seconds
 class RepeatedTimer(object):
      def __init__(self, interval, function, *args, **kwargs):
           self._timer = None
@@ -465,8 +467,6 @@ top5Label = Label(root, text="Top 5 Performers (Percent increase from yesterday)
 top5Box = Text(root, width=45, height=8, font=("Calibri", 10))
 top5Box.place(x=10, y=420)
 top5Box.configure(state="disabled")
-top5Box.insert("end", "test")
-
 
 ########################################################
 
@@ -495,7 +495,6 @@ _1hThread.interval = 3601
 
 root.iconbitmap('ticker.ico')
 # Begin Tkinter GUI event loop
-# getRecentDayPctDiff(top5Box, bot5Box)
 root.mainloop()
 
 # Stop timer threads after GUI exection ends

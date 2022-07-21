@@ -1,10 +1,10 @@
 from configparser import ConfigParser
 
 def ftConfigSetup():
-    #Get the configparser object
+    # Get the configparser object
     config_object = ConfigParser()
 
-    #Assume we need 2 sections in the config file, let's call them USERINFO and SERVERCONFIG
+    # Store API, DATABASE and Stock settings
     config_object["API"] = {
         "url" : "https://twelve-data1.p.rapidapi.com/time_series",
         "apiheader" : "twelve-data1.p.rapidapi.com",
@@ -20,22 +20,22 @@ def ftConfigSetup():
     }
 
     config_object["STOCKCONFIG"] = {
-        "stock1": "ABBOTT LABORATORIES",
+        "stock1": "APPLE",
         "time1": "5MIN",
 
-        "stock2": "ABBVIE",
+        "stock2": "MICROSOFT",
         "time2": "5MIN",
 
-        "stock3": "ACCENTURE PLC.",
+        "stock3": "ALPHABET",
         "time3": "5MIN",
 
-        "stock4": "ADOBE",
+        "stock4": "AMAZON.COM",
         "time4": "5MIN",
 
-        "stock5": "ADVANCED MICRO DEVICES",
+        "stock5": "TESLA",
         "time5": "5MIN"
     }
 
-    #Write the above sections to config.ini file
+    # Write the above sections to config.ini file
     with open('config.ini', 'w') as conf:
         config_object.write(conf)
