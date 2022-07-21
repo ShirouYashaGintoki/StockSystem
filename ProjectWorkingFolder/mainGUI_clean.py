@@ -32,7 +32,7 @@ apiInfo = config_object["API"]
 stockTfInfo = config_object["STOCKCONFIG"]
 
 # Indices as dataframe, Sheet 1 is main sheet, Sheet 2 has 5 for testing
-indices = pd.read_excel('tickers2.xlsx', sheet_name='Sheet 1')
+indices = pd.read_excel('tickers.xlsx', sheet_name='Sheet 1')
 # print(indices)
 # Create a dictionary of stock names and their ticker symbols
 indDict = pd.Series(indices.Symbol.values, index=indices.CompanyName).to_dict()
@@ -495,7 +495,7 @@ _1hThread.interval = 3601
 
 root.iconbitmap('ticker.ico')
 # Begin Tkinter GUI event loop
-getRecentDayPctDiff(top5Box, bot5Box)
+# getRecentDayPctDiff(top5Box, bot5Box)
 root.mainloop()
 
 # Stop timer threads after GUI exection ends
