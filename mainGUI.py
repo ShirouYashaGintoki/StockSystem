@@ -1,3 +1,4 @@
+# Import required libraries
 from tkinter import *
 from tkinter import messagebox
 from tkinter import scrolledtext as st
@@ -5,43 +6,50 @@ import pandas as pd
 import threading
 import time
 import mysql.connector
-import traceback
 from configparser import ConfigParser
 from configSetup import ftConfigSetup
 from timing import syncTiming5, syncTiming30, syncTiming60
 
+# Try to open config file to check if it exists
 try:
+     # If it exists, just close it as we now know it exists
      with open("config.ini") as cfg:
           print("Config found!")
           cfg.close()
+# If it doesn't exist
 except Exception as e:
-     print(e)
+     # Create a local config file and print to console for debugging
      print("Config not found")
      ftConfigSetup()
      print("Config created!")
 
+# Import from other modules that require the config to exist before importing
 from displayDataFunctions import displayChartWithSignals, displayChart, getRecentDayPctDiff
 from dbFunctions import retrieveDataOneTf, createTable, calculateAndInsert
 
-
+# Create config parser object to read config file
 config_object = ConfigParser()
+# Read config file
 config_object.read("config.ini")
+# Set up 3 global config objects that can be accessed throughout this file
+# dbInfo for database related information (host, dbname etc)
 dbInfo = config_object["DATABASE"]
+# apiInfo for api related information (headers etc)
 apiInfo = config_object["API"]
+# stockTfInfo for ticker/timeframe combinations
 stockTfInfo = config_object["STOCKCONFIG"]
 
-# Indices as dataframe
+# Indices as dataframe from excel spreadsheet
 indices = pd.read_excel('tickers.xlsx', sheet_name='Sheet 1')
 # Create a dictionary of stock names and their ticker symbols
 indDict = pd.Series(indices.Symbol.values, index=indices.CompanyName).to_dict()
-# print(indDict)
 # Create a list of stock names for display purposes
 stockNameList = sorted(list(indDict.keys()))
 
 # List of timeframes, to be changed to 5min, 30min, 1h
 # 1h has a time signal of HH:30
 # 30min is anything either HH:00 or HH:30
-# 5min has anything that is a multiple of 5
+# 5min has anything that is a multiple of 5 or HH:00
 timeFrames = ['5MIN', '30MIN', '1HOUR']
 
 # Dictionary to hold the equivalents of timeframes and API request arguments
@@ -64,9 +72,9 @@ srtCombo = {
      "clicked5" : ['', '', '', '', '', '']
 }
 
-# beansontoastA1? for PC
-# Establish connection using mysql connector
-try:
+# Try to connect to the database
+try: 
+     # Connect using mysql connector with details from config
      db = mysql.connector.connect(
      host=dbInfo['host'],
      user=dbInfo['user'],
@@ -159,7 +167,6 @@ def getData(tf):
                displayChart(returnedDf, displayBox)
           except Exception as e:
                print(f'There has been an error: {e}')
-               print(traceback.format_exc())
           
 # Define callback function
 # Args
