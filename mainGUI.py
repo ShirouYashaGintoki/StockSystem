@@ -31,11 +31,9 @@ from dbFunctions import retrieveDataOneTf, createTable, calculateAndInsert
 config_object = ConfigParser()
 # Read config file
 config_object.read("config.ini")
-# Set up 3 global config objects that can be accessed throughout this file
+# Set up 2 global config objects are needed throughout this file
 # dbInfo for database related information (host, dbname etc)
 dbInfo = config_object["DATABASE"]
-# apiInfo for api related information (headers etc)
-apiInfo = config_object["API"]
 # stockTfInfo for ticker/timeframe combinations
 stockTfInfo = config_object["STOCKCONFIG"]
 
@@ -47,8 +45,8 @@ indDict = pd.Series(indices.Symbol.values, index=indices.CompanyName).to_dict()
 stockNameList = sorted(list(indDict.keys()))
 
 # List of timeframes, to be changed to 5min, 30min, 1h
-# 1h has a time signal of HH:30
-# 30min is anything either HH:00 or HH:30
+# 1h is HH:00
+# 30min is either HH:00 or HH:30
 # 5min has anything that is a multiple of 5 or HH:00
 timeFrames = ['5MIN', '30MIN', '1HOUR']
 
@@ -186,37 +184,49 @@ def getData(tf):
 # Define callback function for stocks
 # Args
 # clicker = The StringVar associated with the stock dropdown box
-# timeframe = The StringVar associated with the timeframe drop down box
+# timeframe = The StringVar associated with the timeframe dropdown box
 # clickername = The name identifying the dropdown box being changed
 def callback1(clicker, timeframe, clickerName, *args):
      # Check if additional args (clickerVar) is False (process change like normal)
      if not args[0]:
-          # 
+          # Loop through the lists in the dictionary
           for keyName in srtCombo:
+               # Check if there is a duplicate combination
                if [clicker.get(), timeframe.get()] == [srtCombo[keyName][4], srtCombo[keyName][5]]:
+                    # If the name of the variable is the same as the associated dropdown
                     if clickerName == keyName:
+                         # Continue the loop, as this is comparing the traced box with itself
                          continue
                     else:
+                         # Else show error to user
                          print(f'A duplicate has been found!')
                          messagebox.showinfo("ERROR", "You cannot have duplicate STOCK/TIMEFRAME combinations!")
+                         # Check if there is a stock in the empty space (a new stock)
                          if srtCombo[clickerName][1] == '':
+                              # Set the dropdown value to the older selection
                               clicker.set(srtCombo[clickerName][0])
                          else:
+                              # Otherwise set it to the newer selection
                               clicker.set(srtCombo[clickerName][1])
                          break
           else:
-               # If combo does not exist, allow change and move stock pointers
-               # Check if there is already a pointer in stock rotation
+               # If combo does not exist, allow change and move stock name rotations
+               # Check if there is already a stock in the new stock slot
                if srtCombo[clickerName][1] == '':
+                    # Set the new stock in the new stock position and current combo position
                     srtCombo[clickerName][1] = clicker.get()
                     srtCombo[clickerName][4] = clicker.get()
                else:
+                    # Pop the old stock out and replace with the last stock
+                    # Move new stock into new stock and current stock positions
                     srtCombo[clickerName][0] = srtCombo[clickerName][1]
                     srtCombo[clickerName][1] = clicker.get()
                     srtCombo[clickerName][4] = clicker.get()
                print(f'drop variable has been changed to {clicker.get()}')
                print(f'New combo registered as {srtCombo[clickerName][4]}, {srtCombo[clickerName][5]}')
+     # Else clickerVar is true (config is being loaded in)
      else:
+          # Ignore duplicates and change the values in the same way as above
           if srtCombo[clickerName][1] == '':
                srtCombo[clickerName][1] = clicker.get()
                srtCombo[clickerName][4] = clicker.get()
@@ -233,120 +243,123 @@ def callback1(clicker, timeframe, clickerName, *args):
 # timeframe = The StringVar associated with the timeframe drop down box
 # clickername = The name identifying the dropdown box being changed
 def callback2(clicker, timeframe, clickerName, *args):
-     # When dropdown is changed, check if its combo exists
+     # Check if additional args (clickerVar) is False (process change like normal)
      if not args[0]:
+          # Loop through the lists in the dictionary
           for keyName in srtCombo:
+               # Check if there is a duplicate combination
                if [clicker.get(), timeframe.get()] == [srtCombo[keyName][4], srtCombo[keyName][5]]:
+                    # If the name of the variable is the same as the associated dropdown
                     if clickerName == keyName:
+                         # Continue the loop, as this is comparing the traced box with itself
                          continue
                     else:
+                         # Else show error to user
                          print(f'A duplicate time has been found!')
                          messagebox.showinfo("ERROR", "You cannot have duplicate STOCK/TIMEFRAME combinations!")
+                         # Check if there is a timeframe in the empty space (a new timeframe)
                          if srtCombo[clickerName][3] == '':
+                              # Set the dropdown value to the older selection
                               timeframe.set(srtCombo[clickerName][2])
                          else:
+                              # Otherwise set it to the newer selection
                               timeframe.set(srtCombo[clickerName][3])
                          break
           else:
-               # If combo does not exist, allow change and move stock pointers
-               # Check if there is already a pointer in stock rotation
+               # If combo does not exist, allow change and move timeframe rotations
+               # Check if there is already a timeframe in the new timeframe slot
                if srtCombo[clickerName][3] == '':
+                    # Set the new timeframe in the new timeframe position and current combo position
                     srtCombo[clickerName][3] = timeframe.get()
                     srtCombo[clickerName][5] = timeframe.get()
                else:
+                    # Pop the old timeframe out and replace with the last timeframe
+                    # Move new timeframe into new timeframe and current timeframe positions
                     srtCombo[clickerName][2] = srtCombo[clickerName][3]
                     srtCombo[clickerName][3] = timeframe.get()
                     srtCombo[clickerName][5] = timeframe.get()
                     
                print(f'drop variable has been changed to {timeframe.get()}')
                print([clicker.get(), timeframe.get()])
+
+     # Else clickerVar is true (config is being loaded in)
      else:
-               # If combo does not exist, allow change and move stock pointers
-               # Check if there is already a pointer in stock rotation
-               if srtCombo[clickerName][3] == '':
-                    srtCombo[clickerName][3] = timeframe.get()
-                    srtCombo[clickerName][5] = timeframe.get()
-               else:
-                    srtCombo[clickerName][2] = srtCombo[clickerName][3]
-                    srtCombo[clickerName][3] = timeframe.get()
-                    srtCombo[clickerName][5] = timeframe.get()
-                    
-               print(f'drop variable has been changed to {timeframe.get()}')
-               print([clicker.get(), timeframe.get()])
+          # Ignore duplicates and change the values in the same way as above
+          if srtCombo[clickerName][3] == '':
+               srtCombo[clickerName][3] = timeframe.get()
+               srtCombo[clickerName][5] = timeframe.get()
+          else:
+               srtCombo[clickerName][2] = srtCombo[clickerName][3]
+               srtCombo[clickerName][3] = timeframe.get()
+               srtCombo[clickerName][5] = timeframe.get()
+               
+          print(f'drop variable has been changed to {timeframe.get()}')
+          print([clicker.get(), timeframe.get()])
 
-     
+# Function to save current stock/time selections to the config file
 def saveConfig():
-     config_object = ConfigParser()
-     config_object.read("config.ini")
+     # Replace each value in the config with the dropdown box value
+     stockTfInfo["stock1"] = clicked1.get()
+     stockTfInfo["time1"] = timeFrame1.get()
 
-     configData = config_object["STOCKCONFIG"]
+     stockTfInfo["stock2"] = clicked2.get()
+     stockTfInfo["time2"] = timeFrame2.get()
 
-     configData["stock1"] = clicked1.get()
-     configData["time1"] = timeFrame1.get()
+     stockTfInfo["stock3"] = clicked3.get()
+     stockTfInfo["time3"] = timeFrame3.get()
 
-     configData["stock2"] = clicked2.get()
-     configData["time2"] = timeFrame2.get()
+     stockTfInfo["stock4"] = clicked4.get()
+     stockTfInfo["time4"] = timeFrame4.get()
 
-     configData["stock3"] = clicked3.get()
-     configData["time3"] = timeFrame3.get()
+     stockTfInfo["stock5"] = clicked5.get()
+     stockTfInfo["time5"] = timeFrame5.get()
 
-     configData["stock4"] = clicked4.get()
-     configData["time4"] = timeFrame4.get()
-
-     configData["stock5"] = clicked5.get()
-     configData["time5"] = timeFrame5.get()
-
+     # Open the config file in write mode
      with open('config.ini', 'w') as conf:
+          # Write to the config to save changes
           config_object.write(conf)
+     # Close the config file
      conf.close()
      print("Config written to!")
 
+# Function to load config file
 def loadConfig():
+     # Make local clickerVar variable global and set it to true to bypass trace function checks
      global clickerVar
      clickerVar = True
-     config_object = ConfigParser()
-     config_object.read("config.ini")
+     # Set the dropdown boxes values according to the values in the config
+     clicked1.set(stockTfInfo["stock1"])
+     timeFrame1.set(stockTfInfo["time1"])
 
-     configData = config_object["STOCKCONFIG"]
-     clicked1.set(configData["stock1"])
-     timeFrame1.set(configData["time1"])
+     clicked2.set(stockTfInfo["stock2"])
+     timeFrame2.set(stockTfInfo["time2"])
 
-     clicked2.set(configData["stock2"])
-     timeFrame2.set(configData["time2"])
+     clicked3.set(stockTfInfo["stock3"])
+     timeFrame3.set(stockTfInfo["time3"])
 
-     clicked3.set(configData["stock3"])
-     timeFrame3.set(configData["time3"])
+     clicked4.set(stockTfInfo["stock4"])
+     timeFrame4.set(stockTfInfo["time4"])
 
-     clicked4.set(configData["stock4"])
-     timeFrame4.set(configData["time4"])
-
-     clicked5.set(configData["stock5"])
-     timeFrame5.set(configData["time5"])
+     clicked5.set(stockTfInfo["stock5"])
+     timeFrame5.set(stockTfInfo["time5"])
      print("Config loaded!")
+     # Set clickerVar back to false so any further changes are checked as normal
      clickerVar = False
 
-# def test():
-#      top5Box.configure(state="normal")
-#      top5Box.insert("end", "plop")
-#      top5Box.configure(state="disabled")
-
-# Stock 1
-#####################################
-clicked1.set(stockNameList[0])
-timeFrame1.set(timeFrames[0])
+# Stock 1/Timeframe 1
+# #####################################
+# Initialize srtCombo
 srtCombo["clicked1"][0] = clicked1.get()
 srtCombo["clicked1"][2] = timeFrame1.get()
 srtCombo["clicked1"][4] = clicked1.get()
 srtCombo["clicked1"][5] = timeFrame1.get()
+# Add trace functions to dropdown boxes, using lambda and placeholder variables to pass variables to trace function
 clicked1.trace_add("write", lambda var_name, var_index, operation: callback1(clicked1, timeFrame1, "clicked1", clickerVar))
 timeFrame1.trace_add("write", lambda var_name, var_index, operation: callback2(clicked1, timeFrame1, "clicked1", clickerVar))
-
 #####################################
 
-# Stock 2
+# Stock 2/Timeframe 2
 #####################################
-clicked2.set(stockNameList[1])
-timeFrame2.set(timeFrames[0])
 srtCombo["clicked2"][0] = clicked2.get()
 srtCombo["clicked2"][2] = timeFrame2.get()
 srtCombo["clicked2"][4] = clicked2.get()
@@ -355,10 +368,8 @@ clicked2.trace_add("write", lambda var_name, var_index, operation: callback1(cli
 timeFrame2.trace_add("write", lambda var_name, var_index, operation: callback2(clicked2, timeFrame2, "clicked2", clickerVar))
 #####################################
 
-# Stock 3
+# Stock 3/Timeframe 3
 #####################################
-clicked3.set(stockNameList[2])
-timeFrame3.set(timeFrames[0])
 srtCombo["clicked3"][0] = clicked3.get()
 srtCombo["clicked3"][2] = timeFrame3.get()
 srtCombo["clicked3"][4] = clicked3.get()
@@ -367,10 +378,8 @@ clicked3.trace_add("write", lambda var_name, var_index, operation: callback1(cli
 timeFrame3.trace_add("write", lambda var_name, var_index, operation: callback2(clicked3, timeFrame3, "clicked3", clickerVar))
 #####################################
 
-# Stock 4
+# Stock 4/Timeframe 4
 #####################################
-clicked4.set(stockNameList[3])
-timeFrame4.set(timeFrames[0])
 srtCombo["clicked4"][0] = clicked4.get()
 srtCombo["clicked4"][2] = timeFrame4.get()
 srtCombo["clicked4"][4] = clicked4.get()
@@ -379,10 +388,8 @@ clicked4.trace_add("write", lambda var_name, var_index, operation: callback1(cli
 timeFrame4.trace_add("write", lambda var_name, var_index, operation: callback2(clicked4, timeFrame4, "clicked4", clickerVar))
 #####################################
 
-# Stock 5
+# Stock 5/Timeframe 5
 #####################################
-clicked5.set(stockNameList[4])
-timeFrame5.set(timeFrames[0])
 srtCombo["clicked5"][0] = clicked5.get()
 srtCombo["clicked5"][2] = timeFrame5.get()
 srtCombo["clicked5"][4] = clicked5.get()
@@ -390,16 +397,19 @@ srtCombo["clicked5"][5] = timeFrame5.get()
 clicked5.trace_add("write", lambda var_name, var_index, operation : callback1(clicked5, timeFrame5, "clicked5", clickerVar))
 timeFrame5.trace_add("write", lambda var_name, var_index, operation: callback2(clicked5, timeFrame5, "clicked5", clickerVar))
 #####################################
-stockNameList
+
+# Create dropdown box as OptionMenu, passing tkinter root, dropdown box stringvar and list of stock names. Configure size, colour and positioning
 drop1 = OptionMenu(root, clicked1, *stockNameList)
 drop1.config(width=25, bg="green", foreground="white")
 drop1.place(x=0, y=0)
 
+# Create get chart button, size and positioning, and setting command to function to display chart with signals, passing stock and timeframe as args
 button1 = Button(root, text="Get chart")
 button1.columnconfigure(0, weight=0)
 button1.place(x=0, y=35)
 button1['command'] = lambda:displayChartWithSignals(clicked1.get(), timeFrame1.get()) 
 
+# Create timeframe dropdown as OptionMenu, passing tkinter root, dropdown box stringvar, and list of timeframes. Configure size, colour and positioning
 dropTf1 = OptionMenu(root, timeFrame1, *timeFrames)
 dropTf1.config(width=10, bg="blue", foreground="white")
 dropTf1.place(x=90, y=32)
@@ -466,65 +476,82 @@ dropTf5.place(x=90, y=352)
 
 ########################################################
 
+# Load config after creation of the dropdown boxes
 loadConfig()
 
 ########################################################
 
+# Create button to load config, giving loadConfig function as command. Configure size, colour and positioning
 loadConfig = Button(root, text="Load Selections", command=loadConfig)
 loadConfig.config(width=15, bg="white", foreground="black")
 loadConfig.place(x=320, y=600)
 
+# Create button to save config, giving saveConfig function as command. Configure size, colour and positioning
 saveConfig = Button(root, text="Save Selections", command=saveConfig)
 saveConfig.config(width=15, bg="white", foreground="black")
 saveConfig.place(x=440, y=600)
 
+# Create button to exit application, giving destroy function as command to kill GUI, ending the program execution. Configure size, colour and positioning
 exitButton = Button(root, text="Exit", command=root.destroy)
 exitButton.config(width=10, bg="red", foreground="white")
 exitButton.place(x=560, y=600)
 
 ########################################################
 
+# Create displaybox to display signals. Configure size, colour and positioning
 displayBox = st.ScrolledText(root, width=29, height=23, font=("Calibri", 15))
 displayBox.place(x=335, y=2)
+# Add tags to displayBox to change colour of text when BUY or SELL is in the text
 displayBox.tag_configure('BUY', background='black', foreground='lime')
 displayBox.tag_configure('SELL', background='black', foreground='red')
+# Disable box so that user can't edit it
 displayBox.configure(state="disabled")
 
 ########################################################
 
+# Create label and text box for displaying top 5 performing stocks
 top5Label = Label(root, text="Top 5 Performers (Percent increase from yesterday)", foreground="green").place(x=10, y=400)
 top5Box = Text(root, width=45, height=8, font=("Calibri", 10))
 top5Box.place(x=10, y=420)
+# Disable box so that user can't edit it
 top5Box.configure(state="disabled")
 
 ########################################################
 
+# Create label and text box for displaying worst 5 performing stocks
 bot5Label = Label(root, text="Worst 5 Performers (Percent decrease from yesterday)", foreground="red").place(x=10, y=546)
 bot5Box = Text(root, width=45, height=8, font=("Calibri", 10))
 bot5Box.place(x=10, y=570)
+# Disable box so that user can't edit it
 bot5Box.configure(state="disabled")
 
 ########################################################
 
+# Set up initial number of seconds to wait from now until the next interval
 fiveMinSyncTime = syncTiming5()
 thirtyMinSyncTime = syncTiming30()
 hourSyncTime = syncTiming60()
 
+# Print to console for debugging
 print(f'Five mins in: {fiveMinSyncTime} seconds')
 print(f'Thirty mins in: {thirtyMinSyncTime} seconds')
 print(f'One hour in: {hourSyncTime} seconds')
 
+# Create repeated timer opbjects with timing until next interval, getData function to be activated on interval, and timeframe string to identify which timeframe
 _5minThread = RepeatedTimer(fiveMinSyncTime, getData, "5MIN")
 _30minThread = RepeatedTimer(thirtyMinSyncTime, getData, "30MIN")
 _1hThread = RepeatedTimer(hourSyncTime, getData, "1HOUR")
 
+# Set the interval after first run to respective time in seconds + 1
 _5minThread.interval = 301
 _30minThread.interval = 1801
 _1hThread.interval = 3601
 
+# Set icon
 root.iconbitmap('ticker.ico')
-# Begin Tkinter GUI event loop
+# Display top and worst performing stocks to the displayboxes
 getRecentDayPctDiff(top5Box, bot5Box)
+# Start main event loop
 root.mainloop()
 
 # Stop timer threads after GUI exection ends
