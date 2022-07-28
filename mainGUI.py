@@ -80,15 +80,17 @@ try:
      user=dbInfo['user'],
      passwd=dbInfo['password']
      )
+# Catch any errors if can't connect to the database
 except Exception as e:
      print(e)
-     messagebox.showinfo("ERROR", "You cannot have duplicate STOCK/TIMEFRAME combinations!")
+     # Display error box to user and quit
+     messagebox.showinfo("ERROR", "There was a problem connecting to the database.\nPlease try again later\nThis application will now close")
      exit()
 
 # Create cursor
 my_cursor = db.cursor()
 
-# Try to create database, catch exception if fails
+# Try to create database schema, catch exception if fails
 try:
      my_cursor.execute("CREATE DATABASE StockTables")
 except Exception:
@@ -97,7 +99,7 @@ except Exception:
 # Close database connection now
 db.close()
 
-# Function found on stackoverflow by eraoul
+# Class found on stackoverflow by eraoul
 # https://stackoverflow.com/questions/474528/what-is-the-best-way-to-repeatedly-execute-a-function-every-x-seconds
 class RepeatedTimer(object):
      def __init__(self, interval, function, *args, **kwargs):
@@ -145,37 +147,51 @@ timeFrame3 = StringVar(root)
 timeFrame4 = StringVar(root)
 timeFrame5 = StringVar(root)
 
+# Create global variable clickervar to prevent load config from detecting duplicates 
+# as it may occur while values are being updated
 global clickerVar
 clickerVar = False
 
+# Main function to be called when an interval is reached
+# Args
+# tf = The timeframe interval that is being called
 def getData(tf):
+     # Get the correct timeframe argument according to the current interval
      apiArgTf = timeFrameDict[tf]
-     print(tf, apiArgTf)
+     # Create a list of the symbols to get in this timeframe
      symbolsToGet = []
+     # Loop through the combination dictionary, and find which symbols have the
+     # same timeframe combination as this interval
      for key in srtCombo:
           if srtCombo[key][5] == tf:
+               # If it is the same, append it to the list of symbols to retrieve
                symbolsToGet.append(indDict[srtCombo[key][4]])
      print(symbolsToGet)
+     # Create a table for each of the assets
      for assetName in symbolsToGet:
           createTable(assetName, apiArgTf)
+     # Loop through each symbol
      for asset in symbolsToGet:
           try:
+               # Try and retrieve, calculate and insert the data into the database
                calculateAndInsert(asset, apiArgTf)
+               # Retrieve data from the databse
                returnedDf = retrieveDataOneTf(symbolsToGet, apiArgTf)
-               print("RETURNED DF CHECK SELECTOR")
-               print(returnedDf)
+               # Display any signals for the combination to the displayBox
                displayChart(returnedDf, displayBox)
+          # Catch any exceptions and print for debugging
           except Exception as e:
                print(f'There has been an error: {e}')
           
-# Define callback function
+# Define callback function for stocks
 # Args
 # clicker = The StringVar associated with the stock dropdown box
 # timeframe = The StringVar associated with the timeframe drop down box
 # clickername = The name identifying the dropdown box being changed
 def callback1(clicker, timeframe, clickerName, *args):
-     # When dropdown is changed, check if its combo exists
+     # Check if additional args (clickerVar) is False (process change like normal)
      if not args[0]:
+          # 
           for keyName in srtCombo:
                if [clicker.get(), timeframe.get()] == [srtCombo[keyName][4], srtCombo[keyName][5]]:
                     if clickerName == keyName:
@@ -201,19 +217,21 @@ def callback1(clicker, timeframe, clickerName, *args):
                print(f'drop variable has been changed to {clicker.get()}')
                print(f'New combo registered as {srtCombo[clickerName][4]}, {srtCombo[clickerName][5]}')
      else:
-               # If combo does not exist, allow change and move stock pointers
-               # Check if there is already a pointer in stock rotation
-               if srtCombo[clickerName][1] == '':
-                    srtCombo[clickerName][1] = clicker.get()
-                    srtCombo[clickerName][4] = clicker.get()
-               else:
-                    srtCombo[clickerName][0] = srtCombo[clickerName][1]
-                    srtCombo[clickerName][1] = clicker.get()
-                    srtCombo[clickerName][4] = clicker.get()
-               print(f'drop variable has been changed to {clicker.get()}')
-               print(f'New combo registered as {srtCombo[clickerName][4]}, {srtCombo[clickerName][5]}')
+          if srtCombo[clickerName][1] == '':
+               srtCombo[clickerName][1] = clicker.get()
+               srtCombo[clickerName][4] = clicker.get()
+          else:
+               srtCombo[clickerName][0] = srtCombo[clickerName][1]
+               srtCombo[clickerName][1] = clicker.get()
+               srtCombo[clickerName][4] = clicker.get()
+          print(f'drop variable has been changed to {clicker.get()}')
+          print(f'New combo registered as {srtCombo[clickerName][4]}, {srtCombo[clickerName][5]}')
 
-
+# Define callback function for timeframes
+# Args
+# clicker = The StringVar associated with the stock dropdown box
+# timeframe = The StringVar associated with the timeframe drop down box
+# clickername = The name identifying the dropdown box being changed
 def callback2(clicker, timeframe, clickerName, *args):
      # When dropdown is changed, check if its combo exists
      if not args[0]:
