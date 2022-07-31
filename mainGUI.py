@@ -9,6 +9,7 @@ import mysql.connector
 from configparser import ConfigParser
 from configSetup import ftConfigSetup
 from timing import syncTiming5, syncTiming30, syncTiming60
+from playsound import playsound
 
 # Try to open config file to check if it exists
 try:
@@ -99,31 +100,47 @@ db.close()
 
 # Class found on stackoverflow by eraoul
 # https://stackoverflow.com/questions/474528/what-is-the-best-way-to-repeatedly-execute-a-function-every-x-seconds
-class RepeatedTimer(object):
-     def __init__(self, interval, function, *args, **kwargs):
+# Create class for repeated timer
+class RepeatedTimer():
+     # Class initialization function
+     # Args
+     # interval = Given interval until next function call
+     # function = Function to call once interval is reached
+     def __init__(self, interval, function, *args):
           self._timer = None
           self.interval = interval
           self.function = function
           self.args = args
-          self.kwargs = kwargs
           self.is_running = False
           self.next_call = time.time()
           self.start()
 
+     # Function to run repeated timer
      def _run(self):
+          # Set running to false
           self.is_running = False
+          # Start repeated timer
           self.start()
-          self.function(*self.args, **self.kwargs)
+          # Call function with given args
+          self.function(*self.args)
 
+     # Function to start repeated timer
      def start(self):
+          # Check if the timer is not already running
           if not self.is_running:
+               # Set next call to the given interval
                self.next_call += self.interval
+               # Create the timer on a new thread
                self._timer = threading.Timer(self.next_call - time.time(), self._run)
+               # Start the timer and set running to true
                self._timer.start()
                self.is_running = True
 
+     # Function to stop repeated timer
      def stop(self):
+          # Cancel timer thread
           self._timer.cancel()
+          # Set running to false
           self.is_running = False
 
 
@@ -168,6 +185,8 @@ def getData(tf):
      # Create a table for each of the assets
      for assetName in symbolsToGet:
           createTable(assetName, apiArgTf)
+     # Set signalCounter to check if signals have been posted
+     signalCounter = 0
      # Loop through each symbol
      for asset in symbolsToGet:
           try:
@@ -176,10 +195,14 @@ def getData(tf):
                # Retrieve data from the databse
                returnedDf = retrieveDataOneTf(symbolsToGet, apiArgTf)
                # Display any signals for the combination to the displayBox
-               displayChart(returnedDf, displayBox)
+               signalsPrinted = displayChart(returnedDf, displayBox)
+               # Increment if a signal was posted
+               if signalsPrinted: signalCounter += 1
           # Catch any exceptions and print for debugging
           except Exception as e:
                print(f'There has been an error: {e}')
+     # If at least 1 signal has been posted at the end, play an alert to the user
+     if signalCounter > 0:  playsound('alert.mp3')
           
 # Define callback function for stocks
 # Args
