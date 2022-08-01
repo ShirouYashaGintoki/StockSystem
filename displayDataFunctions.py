@@ -258,7 +258,6 @@ def displayChart(dfOfSignals, displayBox):
           # Re-sort results by datetime
           results = results.sort_values(by=['datetime'])
           # Ensure results is not empty
-          signalsPosted = False
           if not results.empty:
                print("Results sorted by datetime")
                print(tabulate(results, showindex=False, headers=results.columns))
@@ -289,14 +288,11 @@ def displayChart(dfOfSignals, displayBox):
                          inputString = f"""Date/Time: {str(signalDt)}\nClose Price: {closePrice:.2f}\n---------------------------------------------\n"""
                          displayBox.insert('end', inputString)
                          print(inputString)
-                    signalsPosted = True
                # Finally, set the state back to disabled so the user can't edit it
                displayBox.configure(state="disabled")
-               return signalsPosted
           else:
                # Else, print to the console for debugging, no need to display anything to the box
                print("Nothing available")
-               return signalsPosted
      # Catch any exception and print for debugging
      except Exception as e:
           print("DisplayBox error " + str(e))

@@ -5,7 +5,6 @@ import pandas as pd
 import sqlalchemy
 from pandas import json_normalize
 from tkinter import messagebox
-from tabulate import tabulate
 import requests
 from configparser import ConfigParser
 

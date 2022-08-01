@@ -9,7 +9,6 @@ import mysql.connector
 from configparser import ConfigParser
 from configSetup import ftConfigSetup
 from timing import syncTiming5, syncTiming30, syncTiming60
-from playsound import playsound
 
 # Try to open config file to check if it exists
 try:
@@ -185,8 +184,6 @@ def getData(tf):
      # Create a table for each of the assets
      for assetName in symbolsToGet:
           createTable(assetName, apiArgTf)
-     # Set signalCounter to check if signals have been posted
-     signalCounter = 0
      # Loop through each symbol
      for asset in symbolsToGet:
           try:
@@ -195,14 +192,10 @@ def getData(tf):
                # Retrieve data from the databse
                returnedDf = retrieveDataOneTf(symbolsToGet, apiArgTf)
                # Display any signals for the combination to the displayBox
-               signalsPrinted = displayChart(returnedDf, displayBox)
-               # Increment if a signal was posted
-               if signalsPrinted: signalCounter += 1
+               displayChart(returnedDf, displayBox)
           # Catch any exceptions and print for debugging
           except Exception as e:
                print(f'There has been an error: {e}')
-     # If at least 1 signal has been posted at the end, play an alert to the user
-     if signalCounter > 0:  playsound('alert.mp3')
           
 # Define callback function for stocks
 # Args
